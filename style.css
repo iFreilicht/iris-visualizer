@@ -1,0 +1,21 @@
+h1 {
+  font-family: helvetica, arial, sans-serif;
+  text-align: center;
+}
+
+body {
+  width: 800px;
+  height: 500px;
+  margin: 0 auto;
+}
+
+.ring_display {
+	width: 55%;
+	margin-right: 2%;
+	float: left;
+}
+
+.cue_editor {
+	width: 40%;
+	float: left;
+}
