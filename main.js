@@ -13,6 +13,14 @@ let caseColorEdge	= new Color('hsl(0,0%,10%)');
 let caseColorInner	= new Color('hsl(0,0%,5%)');
 let buttonColor		= new Color('hsl(0,0%,10%)');
 
+//measurements in mm
+let buttonR			= 4.9;
+let ringR			= 5.45;
+let ringWidth		= 0.9;
+let caseRInner		= 6;
+let caseREdge		= 6.75;
+let caseROuter		= 9;
+
 //define Cue constructor
 function Cue(){
 	this.channels = [
@@ -22,15 +30,32 @@ function Cue(){
 	];
 	this.reverse = false;
 	this.wrap_hue = false;
-	this.start_color = new Color('black');
-	this.end_color = new Color('black');
+	this.start_color = new Color('#FF0000');
+	this.end_color = new Color('#FF0001');
 	this.offset_color = new Color('black');
 	this.time_divisor = numLeds;
-	this.delay = new Date(0);
-	this.duration = new Date(1000);
-	this.ramp_type = 'jump';
-	this.ramp_parameter = 0.5
+	this.delay = 0;
+	this.duration = 3000;
+	this.ramp_type = 'linearHSL';
+	this.ramp_parameter = 1;
 };
+
+//bootstrap times
+let currentTimes = [];
+function resetTimes(){
+	currentTimes = [];
+	let cue = allCues[currentCueIndex];
+	for(let i = 0; i < numLeds; i++){
+		currentTimes.push((cue.duration/cue.time_divisor) * i);
+	}
+	
+	//this might look wrong, but to make the animation spin clockwise (which is
+	//considered to be the non-reversed direction) the time array has to be reversed.
+	//also, the first LED should stay in position 0 because it is where the animation is starting
+	if(!allCues[currentCueIndex].reverse){
+		currentTimes = currentTimes.splice(0,1).concat(currentTimes.reverse());
+	}
+}
 
 //define CueListItem constructor
 function CueListItem(cue_index, start_stop){
@@ -48,38 +73,30 @@ let transitionPicker = document.getElementById("transitionPicker");
 let transPickerGradCanvas = document.getElementById("transitionPickerHLGradient");
 let transPickerGradCtx = transPickerGradCanvas.getContext("2d");
 
-let hGrad = transPickerGradCtx.createLinearGradient(0, 0, transPickerGradCanvas.width, 0);
-	hGrad.addColorStop(0   / 359, 'hsl(0,  100%,50%)');
-	hGrad.addColorStop(60  / 359, 'hsl(60, 100%,50%)');
-	hGrad.addColorStop(120 / 359, 'hsl(120,100%,50%)');
-	hGrad.addColorStop(180 / 359, 'hsl(180,100%,50%)');
-	hGrad.addColorStop(240 / 359, 'hsl(240,100%,50%)');
-	hGrad.addColorStop(300 / 359, 'hsl(300,100%,50%)');
-	hGrad.addColorStop(359 / 359, 'hsl(359,100%,50%)');
-	transPickerGradCtx.fillStyle = hGrad;
-	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
-	
-let vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
-	vGrad.addColorStop(0.49, 'hsla(0,0%,100%,0)');
-	vGrad.addColorStop(1, 'hsla(0,0%,100%,1)');
-	transPickerGradCtx.fillStyle = vGrad;
-	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
-	vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
-	vGrad.addColorStop(0, 'hsla(0,0%,0%,1)');
-	vGrad.addColorStop(0.51, 'hsla(0,0%,0%,0)');
-	transPickerGradCtx.fillStyle = vGrad;
-	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
-
 let transPickerLineCanvas = document.getElementById("transitionPickerHLLine");
 let transPickerLineCtx = transPickerLineCanvas.getContext("2d");
-	transPickerLineCtx.lineWidth = 5;
-	
+
 let transPickerDotCanvas = document.getElementById("transitionPickerHLDot");
 let transPickerDotCtx = transPickerDotCanvas.getContext("2d");
 	
 let rampParameterDisplay = document.getElementById("rampParameterDisplay");
 let output = document.getElementById("output");
 
+let cueBrowser = document.getElementById("cueBrowser");
+
+let duration = document.getElementById("duration");
+let timeDivisor = document.getElementById("timeDivisor");
+let rampType = document.getElementById("rampType");
+let rampParameter = document.getElementById("rampParameter");
+let reverse = document.getElementById("reverse");
+
+//Transition Picker variables
+let pickingActive = false;
+let closestDistance = transPickerGradCanvas.width + transPickerGradCanvas.height;
+let closestIndex = Infinity;
+let closestIsStart = true;
+
+//Transition Picker helpers
 function colorToHLCoords(color){
 	let h = (color.hue()/360) * transPickerGradCanvas.width;
 	let l = (color.lightness()/100) * transPickerGradCanvas.height;
@@ -100,6 +117,7 @@ function HLCoordsToColor(h, l){
 	return color;
 }
 
+//Transition Picker drawing functions
 function transPickerRedrawLine(cue){
 	function drawEndCap(h, l, strokeStyle, fillStyle){
 		ctx.beginPath();
@@ -150,23 +168,41 @@ function transPickerRedrawDot(color){
 	ctx.stroke();
 }
 
-let pickingActive = false;
-let closestDistance = transPickerGradCanvas.width + transPickerGradCanvas.height;
-let closestIndex = Infinity;
-let closestIsStart = true;
+function redrawTransitionPickerGradient(){
+	let hGrad = transPickerGradCtx.createLinearGradient(0, 0, transPickerGradCanvas.width, 0);
+	hGrad.addColorStop(0   / 359, 'hsl(0,  100%,50%)');
+	hGrad.addColorStop(60  / 359, 'hsl(60, 100%,50%)');
+	hGrad.addColorStop(120 / 359, 'hsl(120,100%,50%)');
+	hGrad.addColorStop(180 / 359, 'hsl(180,100%,50%)');
+	hGrad.addColorStop(240 / 359, 'hsl(240,100%,50%)');
+	hGrad.addColorStop(300 / 359, 'hsl(300,100%,50%)');
+	hGrad.addColorStop(359 / 359, 'hsl(359,100%,50%)');
+	transPickerGradCtx.fillStyle = hGrad;
+	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
 	
-
+let vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
+	vGrad.addColorStop(0.49, 'hsla(0,0%,100%,0)');
+	vGrad.addColorStop(1, 'hsla(0,0%,100%,1)');
+	transPickerGradCtx.fillStyle = vGrad;
+	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
+	vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
+	vGrad.addColorStop(0, 'hsla(0,0%,0%,1)');
+	vGrad.addColorStop(0.51, 'hsla(0,0%,0%,0)');
+	transPickerGradCtx.fillStyle = vGrad;
+	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
+}
+	
 function relocateColorPoint(mouseH, mouseL){
 	let newColor = HLCoordsToColor(mouseH, mouseL);
 	if(closestIsStart){
-		all_cues[closestIndex].start_color = newColor;
+		allCues[closestIndex].start_color = newColor;
 	} else {
-		all_cues[closestIndex].end_color = newColor;
+		allCues[closestIndex].end_color = newColor;
 	}
-	console.log(newColor.hex());
-	transPickerRedrawLine(all_cues[closestIndex]);
+	transPickerRedrawLine(allCues[closestIndex]);
 }
 	
+//Transition Picker event handlers
 function handleTransitionPickerMouseMove(e){
 	let rect = transitionPicker.getBoundingClientRect();
 	let mouseH = e.clientX - rect.left;
@@ -189,9 +225,9 @@ function handleTransitionPickerMouseDown(e){
 	closestDistance = transPickerGradCanvas.width + transPickerGradCanvas.height;
 	closestIndex = Infinity;
 	closestIsStart = true;
-	for(let i in all_cues){
-		let [startH, startL] 	= colorToHLCoords(all_cues[i].start_color);
-		let [endH, endL] 		= colorToHLCoords(all_cues[i].end_color);
+	for(let i of activeCueIndices){
+		let [startH, startL] 	= colorToHLCoords(allCues[i].start_color);
+		let [endH, endL] 		= colorToHLCoords(allCues[i].end_color);
 		let startDistance 	= Math.sqrt(Math.pow(startH - mouseH, 2) + Math.pow(startL - mouseL, 2));
 		let endDistance 	= Math.sqrt(Math.pow(endH 	- mouseH, 2) + Math.pow(endL   - mouseL, 2));
 		if(startDistance < closestDistance){
@@ -218,14 +254,12 @@ function handleTransitionPickerMouseUp(e){
 	document.removeEventListener("mousemove", handleTransitionPickerMouseMove);
 }
 
-
-//measurements in mm
-let buttonR			= 4.9;
-let ringR			= 5.45;
-let ringWidth		= 0.9;
-let caseRInner		= 6;
-let caseREdge		= 6.75;
-let caseROuter		= 9;
+//Additional Options Collapsible
+let add = document.getElementById("additionalOptions");
+function toggleOptions(){
+	additionalOptions.style.display = 
+		additionalOptions.style.display === "block" ? "none" : "block";
+}
 
 //above Radii are in mm, have to be scaled to pixels
 let canvasScale = 20;
@@ -249,29 +283,117 @@ drawCasePart(caseREdge, caseColorEdge);
 drawCasePart(caseRInner, caseColorInner);
 drawCasePart(buttonR, buttonColor);
 
-//Event Handlers:
+//Event Handlers for simple options:
 function updateRampParameter(value){
-	cue1.ramp_parameter = value;
+	allCues[currentCueIndex].ramp_parameter = value;
 	rampParameterDisplay.innerHTML = value;
 }
-
 function updateRampType(value){
-	cue1.ramp_type = value;
+	allCues[currentCueIndex].ramp_type = value;
 }
-
 function updateDuration(value){
-	cue1.duration = new Date(parseInt(value));
+	allCues[currentCueIndex].duration = parseInt(value);
 	resetTimes();
 }
-
 function updateTimeDivisor(value){
-	cue1.time_divisor = parseInt(value);
+	allCues[currentCueIndex].time_divisor = parseInt(value);
+	resetTimes();
+}
+function updateReverse(checked){
+	allCues[currentCueIndex].reverse = checked;
 	resetTimes();
 }
 
-function updateReverse(checked){
-	cue1.reverse = checked;
+//Cue Management
+function indexOfCueItem(elem){
+	return Array.prototype.slice.call(
+		cueBrowser.getElementsByClassName("cueItem")
+	).indexOf(elem);
+}
+
+function closeCue(index){
+	//currentCueIndex is NOT set to NaN here! Keep it this way! 
+	//Better render a few false frames than let the display die
+	let elem = cueBrowser.getElementsByClassName("cueItem")[index];
+	if (typeof elem != "undefined"){
+		elem.removeAttribute("active");
+	}
+}
+
+function openCueItem(elem){
+	openCue(indexOfCueItem(elem));
+}
+
+function openCue(index){
+	if (currentCueIndex >= 0){
+		closeCue(currentCueIndex);
+	}
+	currentCueIndex = index;
+	activeCueIndices = [index];
+	let cueItem = cueBrowser.getElementsByClassName("cueItem")[index];
+	cueItem.setAttribute("active",undefined);
+	//TODO: Update all the values displayed in editor
+	transPickerRedrawLine(allCues[currentCueIndex]);
+	updateCueEditorValues(allCues[currentCueIndex])
 	resetTimes();
+}
+
+function deleteCueItem(elem){
+	deleteCue(indexOfCueItem(elem));
+}
+
+function deleteCue(index){
+	//don't allow deleting the last cue
+	if (allCues.length <= 1){
+		return;
+	}
+	//additional steps will have to be taken when the current index changes
+	let reIndex = index <= currentCueIndex;
+	closeCue(index);
+	
+	cueBrowser.removeChild(cueBrowser.getElementsByClassName("cueItem")[index]);
+	allCues.splice(index, 1);
+	
+	if (reIndex){
+		if (currentCueIndex == 0){
+			openCue(0);
+		} else {
+			openCue(currentCueIndex - 1);
+		}
+	}
+}
+
+function createCue(){
+	let id = allCues.length; 
+	let template = document.getElementById("cueTemplate").cloneNode(true);
+	template.style.display = "block";
+	
+	//Modify openCue button from template
+	let openCueButton = template.getElementsByClassName("openCue")[0];
+	openCueButton.innerHTML = "Cue " + allCues.length;
+	openCueButton.addEventListener("click", function(){openCueItem(template)});
+	
+	//Modify deleteCue button from template
+	let deleteCueButton = template.getElementsByClassName("deleteCue")[0];
+	deleteCueButton.addEventListener("click", function(){deleteCueItem(template)});
+	
+	//create cue object
+	let cue = new Cue();
+	allCues.push(cue);
+	
+	//display fully prepared element
+	cueBrowser.appendChild(template);
+	
+	openCue(id);
+}
+
+function updateCueEditorValues(cue){
+	duration.value = cue.duration;
+	timeDivisor.value = cue.time_divisor;
+	rampType.value = cue.ramp_type;
+	rampParameter.value = cue.ramp_parameter;
+	updateRampParameter(cue.ramp_parameter);
+	reverse.checked = cue.reverse;
 }
 
 //Draw colour to one LED
@@ -340,66 +462,83 @@ function interpolate(start_color, end_color, factor, ramp_type, ramp_parameter){
 }
 
 //Set up cues
-let cue1 = new Cue();
-cue1.duration = new Date(3000);
-cue1.ramp_type = "linearHSL";
-cue1.ramp_parameter = 1;
-cue1.time_divisor = numLeds;
-//cue1.start_color = new Color('hsl(359, 100%, 50%)');
-//cue1.end_color = new Color('hsl(0, 100%, 50%)');
-cue1.start_color = new Color('#FF0000');
-cue1.end_color = new Color('#FF0001');
+let currentCueIndex = NaN;
+let allCues = [];
+let activeCueIndices = [];
 
-transPickerRedrawLine(cue1);
+createCue();
 
-let all_cues = [cue1];
+createCue();
+allCues[1].duration = 3800;
+allCues[1].ramp_parameter = 0.38;
+allCues[1].time_divisor = 1;
+allCues[1].start_color = new Color('hsl(8, 100%, 5%)');
+allCues[1].end_color = new Color('hsl(84, 100%, 62%)');
 
-//draw first ring
-let currentColor = new Color('grey');
+createCue();
+allCues[2].duration = 900;
+allCues[2].ramp_type = "jump";
+allCues[2].ramp_parameter = 0.52;
+allCues[2].start_color = new Color('#FAFF03');
+allCues[2].end_color = new Color('#FF00E6');
+allCues[2].reverse = true;
 
+createCue();
+allCues[3].duration = 60000;
+allCues[3].ramp_type = "jump";
+allCues[3].ramp_parameter = 0.1;
+allCues[3].start_color = new Color('white');
+allCues[3].end_color = new Color('black');
+
+createCue();
+allCues[4].duration = 3500;
+allCues[4].start_color = new Color('hsl(121, 100%, 95%)');
+allCues[4].end_color = new Color('hsl(307, 100%, 15%)');
+
+createCue();
+allCues[5].duration = 700;
+allCues[5].time_divisor = 6;
+allCues[5].ramp_parameter = 0.5;
+allCues[5].start_color = new Color('hsl(272, 100%, 6%)');
+allCues[5].end_color = new Color('hsl(184, 100%, 51%)');
+
+
+// first time setup
+openCue(0);
+redrawTransitionPickerGradient();
+
+//draw test ring
 for(let i = 1; i <= numLeds; i++){
 	if(i === numLeds){
 		drawLed(i, new Color('green'));
 	} else {
-		drawLed(i, currentColor);
+		drawLed(i, new Color('grey'));
 	}
 }
-
-//bootstrap times
-let currentTimes = [];
-function resetTimes(){
-	currentTimes = [];
-	for(let i = 0; i < numLeds; i++){
-		currentTimes.push((cue1.duration/cue1.time_divisor) * i);
-	}
-	
-	//this might look wrong, but to make the animation spin clockwise (which is
-	//considered to be the non-reversed direction) the time array has to be reversed.
-	//also, the first LED should stay in position 0 because it is where the animation is starting
-	if(!cue1.reverse){
-		currentTimes = currentTimes.splice(0,1).concat(currentTimes.reverse());
-	}
-}
-resetTimes();
 
 //*
 //Main loop
+let currentColors = [];
+let currentCue = allCues[currentCueIndex];
 window.setInterval(function () {
-	let currentColors = [];
-	let duration = cue1.duration
-	for(let i = 0; i < numLeds; i++){
-		currentColors.push(new Color(cue1.start_color));
-		currentColors[i] = interpolate(
-			cue1.start_color,
-			cue1.end_color,
-			currentTimes[i]/duration,
-			cue1.ramp_type,
-			cue1.ramp_parameter);
-		drawLed(i, currentColors[i]);
-	}
-	
-	transPickerRedrawDot(currentColors[0]);
-	
+	//currentCueIndex might be NaN
+	//if(currentCueIndex >= 0){
+		currentColors = [];
+		currentCue = allCues[currentCueIndex];
+		let duration = allCues[currentCueIndex].duration;
+		for(let i = 0; i < numLeds; i++){
+			currentColors.push(new Color(currentCue.start_color));
+			currentColors[i] = interpolate(
+				currentCue.start_color,
+				currentCue.end_color,
+				currentTimes[i]/duration,
+				currentCue.ramp_type,
+				currentCue.ramp_parameter);
+			drawLed(i, currentColors[i]);
+		}
+		
+		transPickerRedrawDot(currentColors[0]);
+	//}
 	//update times
 	for(let i in currentTimes){
 		currentTimes[i] = (currentTimes[i] + pollingInterval) % duration;

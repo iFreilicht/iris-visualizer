@@ -10,28 +10,40 @@
 
   <body>
 	<header>
-		<h1>Freilite Iris Visualizer (Ver. 0.1.1)</h1>
+		<h1>Freilite Iris Visualizer (Ver. 0.1.2)</h1>
 		<p id="output"></p>
 	</header>
 	<main>
-		<div id="ring_display">
+		<div id="ringDisplay">
 			<canvas id="ledRingCanvas" width="400" height="400">Your browser does not support the HTML5 canvas tag.</canvas>
 		</div>
-		<div id="cue_editor">
+		<div>
+			<div id="cueTemplate" class="cueItem" style="display: none" cue_id="Infinity">
+				<button class="openCue">CueTmp</button>
+				<button class="deleteCue">✘</button>
+			</div>
+		</div>
+		<div id="cueEditor">
 			<div id="transitionPicker" showcursor>
 				<canvas id="transitionPickerHLGradient" width="300" height="200"></canvas>
 				<canvas id="transitionPickerHLLine" width="300" height="200"></canvas>
 				<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
 			</div><br>
 			<div>
+				<button onclick="toggleOptions()">More Options</button>
+				<div id="additionalOptions" style="display: none;">
+					<p>Nothing here yet.</p>
+				</div>
+			</div><br>
+			<div>
 			</div>
 			<div>
 				<label for="duration">Duration (ms)</label><br>
-				<input id="duration" type="number" min="1" value="3000" oninput="updateDuration(this.value)"/>
+				<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
 			</div><br>
 			<div>
 				<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
-				<input id="timeDivisor" type="number" min="1" value="12" oninput="updateTimeDivisor(this.value)"/>
+				<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
 			</div><br>
 			<div>
 				<label for="rampType">Ramp Type</label><br>
@@ -45,12 +57,15 @@
 				<label for="rampParameter">Ramp Parameter</label><br>
 				<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
 					oninput="updateRampParameter(this.value)"/>
-				<label for="rampParameter">(<span id="rampParameterDisplay">1</span>)</label>
+				<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
 			</div><br>
 			<div>
 				<label for="reverse">Reverse</label>
 				<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
 			</div>
+		</div>
+		<div id="cueBrowser" class="tablist">
+			<button id="createCueButton" onclick="createCue()">Create Cue</button>
 		</div>
 	</main>
 	<script src="color/Color.js"></script>

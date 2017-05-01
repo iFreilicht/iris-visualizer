@@ -4,27 +4,48 @@ h1 {
 }
 
 body {
-  width: 800px;
-  height: 200px;
+  padding: 10px;
   margin: 0 auto;
 }
 
-#ring_display {
-	width: 55%;
-	margin-right: 2%;
+#ringDisplay {
+	margin-right: 0;
 	float: left;
 }
 
-#cue_editor {
-	width: 30%;
+#cueBrowser {
+	float: left;
+}
+
+.cueItem {
+	overflow: auto;
+	padding: 5px;
+	background-color: white;
+}
+
+.cueItem[active] {
+	overflow: auto;	
+	background-color: darkgrey;
+}
+
+button{
+	border: 1px solid #ccc;
+}
+
+#createCueButton {
+	margin: 5px;
+}
+
+#cueEditor {
+	padding: 10px;
+	background-color: darkgrey;
 	float: left;
 }
 
 #transitionPicker {
 	cursor: crosshair;
 	position: relative;
-	height: 100;
-	width: 300;
+	padding: 0px;
 }
 
 #transitionPickerHLGradient {
