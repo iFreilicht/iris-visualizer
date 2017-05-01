@@ -10,28 +10,27 @@
 
   <body>
 	<header>
-		<h1>Freilite Iris Visualizer (Ver. 0.1)</h1>
+		<h1>Freilite Iris Visualizer (Ver. 0.1.1)</h1>
 		<p id="output"></p>
 	</header>
 	<main>
-		<div class="ring_display">
+		<div id="ring_display">
 			<canvas id="ledRingCanvas" width="400" height="400">Your browser does not support the HTML5 canvas tag.</canvas>
 		</div>
-		<div class="cue_editor">
-			<div>
-				<label for="startColor">Start Color</label><br>
-				<button id="startColor" class="jscolor {onFineChange:'updateStartColor(this)', value:'FF0000'}"></button>
+		<div id="cue_editor">
+			<div id="transitionPicker" showcursor>
+				<canvas id="transitionPickerHLGradient" width="300" height="200"></canvas>
+				<canvas id="transitionPickerHLLine" width="300" height="200"></canvas>
+				<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
 			</div><br>
 			<div>
-				<label for="endColor">End Color</label><br>
-				<button id="endColor" class="jscolor {onFineChange:'updateEndColor(this)', value:'FF0001'}"></button>
-			</div><br>
+			</div>
 			<div>
 				<label for="duration">Duration (ms)</label><br>
 				<input id="duration" type="number" min="1" value="3000" oninput="updateDuration(this.value)"/>
 			</div><br>
 			<div>
-				<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label>
+				<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
 				<input id="timeDivisor" type="number" min="1" value="12" oninput="updateTimeDivisor(this.value)"/>
 			</div><br>
 			<div>
@@ -54,7 +53,6 @@
 			</div>
 		</div>
 	</main>
-	<script src='jscolor/jscolor.js'></script>
 	<script src="color/Color.js"></script>
     <script src="main.js"></script>
   </body>

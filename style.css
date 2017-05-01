@@ -5,17 +5,45 @@ h1 {
 
 body {
   width: 800px;
-  height: 500px;
+  height: 200px;
   margin: 0 auto;
 }
 
-.ring_display {
+#ring_display {
 	width: 55%;
 	margin-right: 2%;
 	float: left;
 }
 
-.cue_editor {
-	width: 40%;
+#cue_editor {
+	width: 30%;
 	float: left;
+}
+
+#transitionPicker {
+	cursor: crosshair;
+	position: relative;
+	height: 100;
+	width: 300;
+}
+
+#transitionPickerHLGradient {
+	position: static;
+	left: 0;
+	top: 0;
+	z-index: 0;
+}
+
+#transitionPickerHLLine {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1;
+}
+
+#transitionPickerHLDot {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 2;
 }
