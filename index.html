@@ -19,54 +19,63 @@
 		</div>
 		<div>
 			<div id="cueTemplate" class="cueItem" style="display: none" cue_id="Infinity">
-				<button class="openCue">CueTmp</button>
-				<button class="deleteCue">✘</button>
+				<input type="button" value="CueTmp" class="openCue"/>
+				<input type="button" value="&#x2718;" class="deleteCue"/>
 			</div>
 		</div>
-		<div id="cueEditor">
-			<div id="transitionPicker" showcursor>
-				<canvas id="transitionPickerHLGradient" width="300" height="200"></canvas>
-				<canvas id="transitionPickerHLLine" width="300" height="200"></canvas>
-				<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
-			</div><br>
-			<div>
-				<button onclick="toggleOptions()">More Options</button>
-				<div id="additionalOptions" style="display: none;">
-					<p>Nothing here yet.</p>
+		<div>
+			<div id="cueEditor">
+				<div id="transitionPicker" showcursor>
+					<canvas id="transitionPickerHLGradient" width="300" height="200"></canvas>
+					<canvas id="transitionPickerHLLine" width="300" height="200"></canvas>
+					<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
+				</div><br>
+				<div>
+					<input type="button" value="More Options" onclick="toggleOptions()"/>
+					<div id="additionalOptions" style="display: none;">
+						<p>Nothing here yet.</p>
+					</div>
+				</div><br>
+				<div>
 				</div>
-			</div><br>
-			<div>
+				<div>
+					<label for="duration">Duration (ms)</label><br>
+					<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
+				</div><br>
+				<div>
+					<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
+					<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
+				</div><br>
+				<div>
+					<label for="rampType">Ramp Type</label><br>
+					<select id="rampType" onchange="updateRampType(this.value)">
+						<option value="linearHSL">Linear HSL</option>
+						<option value="linearRGB">Linear RGB</option>
+						<option value="jump">Jump</option>
+					</select>
+				</div><br>
+				<div>
+					<label for="rampParameter">Ramp Parameter</label><br>
+					<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
+						oninput="updateRampParameter(this.value)"/>
+					<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
+				</div><br>
+				<div>
+					<label for="reverse">Reverse</label>
+					<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
+				</div>
 			</div>
-			<div>
-				<label for="duration">Duration (ms)</label><br>
-				<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
-			</div><br>
-			<div>
-				<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
-				<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
-			</div><br>
-			<div>
-				<label for="rampType">Ramp Type</label><br>
-				<select id="rampType" onchange="updateRampType(this.value)">
-					<option value="linearHSL">Linear HSL</option>
-					<option value="linearRGB">Linear RGB</option>
-					<option value="jump">Jump</option>
-				</select>
-			</div><br>
-			<div>
-				<label for="rampParameter">Ramp Parameter</label><br>
-				<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
-					oninput="updateRampParameter(this.value)"/>
-				<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
-			</div><br>
-			<div>
-				<label for="reverse">Reverse</label>
-				<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
+			<div id="cueBrowser" class="tablist">
+				<div id="cueBrowserControls">
+					<a id="downloadAnchor"></a>
+					<input id="downloadButton" type="button" value="Save" onclick="downloadJSON()"/>
+					<input id="uploadAnchor" type="file" onchange="uploadJSON(this.files); this.value=null; return false;"/>
+					<label id="uploadButton" for="uploadAnchor">Load</label>
+					<br>
+					<input type="button" value="Create New Cue" id="createCueButton" onclick="createCue()"/>
+				</div>
 			</div>
-		</div>
-		<div id="cueBrowser" class="tablist">
-			<button id="createCueButton" onclick="createCue()">Create Cue</button>
-		</div>
+		<div>
 	</main>
 	<script src="color/Color.js"></script>
     <script src="main.js"></script>

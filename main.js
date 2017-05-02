@@ -21,24 +21,50 @@ let caseRInner		= 6;
 let caseREdge		= 6.75;
 let caseROuter		= 9;
 
+function defaultValue(value, defaultValue){
+	if(typeof value != "undefined"){
+		return value;
+	}
+	else{
+		return defaultValue;
+	}
+}
+
 //define Cue constructor
-function Cue(){
-	this.channels = [
-		false, false, false, false, 
-		false, false, false, false, 
-		false, false, false, false
-	];
-	this.reverse = false;
-	this.wrap_hue = false;
-	this.start_color = new Color('#FF0000');
-	this.end_color = new Color('#FF0001');
-	this.offset_color = new Color('black');
-	this.time_divisor = numLeds;
-	this.delay = 0;
-	this.duration = 3000;
-	this.ramp_type = 'linearHSL';
-	this.ramp_parameter = 1;
+//p is an optional parameter object
+function Cue(p){
+	if (typeof p == "undefined"){
+		p = {};
+	}
+	this.channels 		= defaultValue(p.channels, Array(numLeds).fill(true,0,numLeds));
+	this.reverse 		= defaultValue(p.reverse, 			false					);
+	this.wrap_hue 		= defaultValue(p.wrap_hue, 			false					);
+	this.time_divisor 	= defaultValue(p.time_divisor,		numLeds					);
+	this.delay 			= defaultValue(p.delay,				0						);
+	this.duration 		= defaultValue(p.duration,			3000					);
+	this.ramp_type 		= defaultValue(p.ramp_type,			'linearHSL'				);
+	this.ramp_parameter = defaultValue(p.ramp_parameter,	1						);
+	this.start_color 	= new Color(defaultValue(p.start_color,		'#FF0000')	);
+	this.end_color 		= new Color(defaultValue(p.end_color, 		'#FF0001')	);
+	this.offset_color 	= new Color(defaultValue(p.offset_color,	'black')	);
 };
+
+Cue.prototype.toJSON = function(){
+	//leave out all unused fields for now
+	return {
+		//channels: this.channels,
+		reverse: this.reverse,
+		//wrap_hue: this.wrap_hue,
+		time_divisor: this.time_divisor,
+		//delay: this.delay,
+		duration: this.duration,
+		ramp_type: this.ramp_type,
+		ramp_parameter: this.ramp_parameter,
+		start_color: this.start_color.getHSL(),
+		end_color: this.end_color.getHSL(),
+		//offset_color: this.offset_color.getHSL()
+	};
+}
 
 //bootstrap times
 let currentTimes = [];
@@ -83,6 +109,10 @@ let rampParameterDisplay = document.getElementById("rampParameterDisplay");
 let output = document.getElementById("output");
 
 let cueBrowser = document.getElementById("cueBrowser");
+
+let uploadAnchor = document.getElementById("uploadAnchor");
+//store empty file list now as it cannot be constructed
+let emptyFileList = uploadAnchor.files;
 
 let duration = document.getElementById("duration");
 let timeDivisor = document.getElementById("timeDivisor");
@@ -343,8 +373,7 @@ function deleteCueItem(elem){
 }
 
 function deleteCue(index){
-	//don't allow deleting the last cue
-	if (allCues.length <= 1){
+	if (allCues.length <= 0 || !(allCues.length > index)){
 		return;
 	}
 	//additional steps will have to be taken when the current index changes
@@ -356,7 +385,12 @@ function deleteCue(index){
 	
 	if (reIndex){
 		if (currentCueIndex == 0){
-			openCue(0);
+			if (allCues.length > 0){
+				openCue(0);
+			} else {
+				//if no cues are leftover
+				currentCueIndex = NaN;
+			}		
 		} else {
 			openCue(currentCueIndex - 1);
 		}
@@ -370,7 +404,7 @@ function createCue(){
 	
 	//Modify openCue button from template
 	let openCueButton = template.getElementsByClassName("openCue")[0];
-	openCueButton.innerHTML = "Cue " + allCues.length;
+	openCueButton.value = "Cue " + allCues.length;
 	openCueButton.addEventListener("click", function(){openCueItem(template)});
 	
 	//Modify deleteCue button from template
@@ -394,6 +428,56 @@ function updateCueEditorValues(cue){
 	rampParameter.value = cue.ramp_parameter;
 	updateRampParameter(cue.ramp_parameter);
 	reverse.checked = cue.reverse;
+}
+
+function downloadJSON(){
+	let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCues, null, 2));
+	let dlAnchorElem = document.getElementById('downloadAnchor');
+	dlAnchorElem.setAttribute("href",     dataStr     );
+	dlAnchorElem.setAttribute("download", "AllCues.json");
+	dlAnchorElem.click();
+}
+
+function uploadJSON(files){
+	if (files.length <= 0){
+		return;
+	}
+	let file = files[0];
+	let reader = new FileReader();
+	
+	reader.onload = function(e){
+		 let data = reader.result;
+		 try {
+			let loadedCues = JSON.parse(data, 
+			function(key, value){
+				//this check is enough because the Cue constructor is very permissive
+				if(typeof value.start_color != 'undefined'){
+					return new Cue(value);
+				}
+				return value;
+			});
+			
+			//remove all existing cues
+			for (let i in allCues){
+				deleteCue(0);
+			}
+			
+			//add newly loaded Cues
+			for (let i in loadedCues){
+				createCue();
+				allCues[i] = loadedCues[i];
+			}
+			
+			openCue(0);			
+		 }
+		 catch (e){
+			alert("Sorry, the file you supplied could not be read properly. "
+					+"More info can be found in the console log. (F12)")
+			console.log(e);
+		 }
+	}
+	
+	reader.readAsText(file);
 }
 
 //Draw colour to one LED
@@ -522,7 +606,7 @@ let currentColors = [];
 let currentCue = allCues[currentCueIndex];
 window.setInterval(function () {
 	//currentCueIndex might be NaN
-	//if(currentCueIndex >= 0){
+	if(currentCueIndex >= 0){
 		currentColors = [];
 		currentCue = allCues[currentCueIndex];
 		let duration = allCues[currentCueIndex].duration;
@@ -538,10 +622,19 @@ window.setInterval(function () {
 		}
 		
 		transPickerRedrawDot(currentColors[0]);
-	//}
-	//update times
-	for(let i in currentTimes){
-		currentTimes[i] = (currentTimes[i] + pollingInterval) % duration;
+	
+		//update times
+		for(let i in currentTimes){
+			currentTimes[i] = (currentTimes[i] + pollingInterval) % duration;
+		}
+	}
+	else {
+		//draw black onto the display if there's no cue to read from
+		currentColors = Array(numLeds).fill(new Color('black'),0,numLeds);
+		for(let i = 0; i < numLeds; i++){
+			drawLed(i, currentColors[i]);
+		}
+		transPickerRedrawDot(currentColors[0]);
 	}
 }, pollingInterval);
 //*/

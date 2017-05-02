@@ -1,6 +1,11 @@
 h1 {
-  font-family: helvetica, arial, sans-serif;
+  font-family: helvetica;
   text-align: center;
+}
+
+body {
+	font-family: helvetica;
+	font-size: 10pt;
 }
 
 body {
@@ -19,7 +24,7 @@ body {
 
 .cueItem {
 	overflow: auto;
-	padding: 5px;
+	padding: 2px 0px;
 	background-color: white;
 }
 
@@ -28,12 +33,41 @@ body {
 	background-color: darkgrey;
 }
 
-button{
+input[type="button"] {
 	border: 1px solid #ccc;
+	padding: 2px 5px;
+	margin: 4px 8px;
+	cursor: pointer;
 }
 
-#createCueButton {
+.deleteCue {
+	float: right;
+}
+
+#downloadAnchor {
+	display: none;
+}
+#uploadAnchor {
+	display: none;
+}
+#uploadButton {
+	border: 1px solid #ccc;
+	background-color: #ddd;
+	padding: 2px 5px;
+	font-size: 10pt;
+	cursor: pointer;
+}
+
+#cueBrowser Button {
 	margin: 5px;
+	float: bottom;
+}
+
+#cueBrowserControls {
+	padding: 3px;
+	margin: 0px 0px 3px 3px;
+	border: 2px solid darkgrey;
+	background-color: #eee
 }
 
 #cueEditor {
