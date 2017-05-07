@@ -1,0 +1,3 @@
+[submodule "color"]
+	path = color
+	url = https://github.com/moagrius/Color
