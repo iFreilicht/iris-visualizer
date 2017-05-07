@@ -54,7 +54,7 @@ Cue.prototype.toJSON = function(){
 	return {
 		//channels: this.channels,
 		reverse: this.reverse,
-		//wrap_hue: this.wrap_hue,
+		wrap_hue: this.wrap_hue,
 		time_divisor: this.time_divisor,
 		//delay: this.delay,
 		duration: this.duration,
@@ -119,6 +119,7 @@ let timeDivisor = document.getElementById("timeDivisor");
 let rampType = document.getElementById("rampType");
 let rampParameter = document.getElementById("rampParameter");
 let reverse = document.getElementById("reverse");
+let wrapHue = document.getElementById("wrapHue");
 
 //Transition Picker variables
 let pickingActive = false;
@@ -149,6 +150,39 @@ function HLCoordsToColor(h, l){
 
 //Transition Picker drawing functions
 function transPickerRedrawLine(cue){
+	let ctx = transPickerLineCtx;
+	//clear canvas
+	ctx.clearRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
+	//get coordinates
+	let [start_h, start_l] = colorToHLCoords(cue.start_color);
+	let [end_h, end_l] = colorToHLCoords(cue.end_color);
+	//calculate gradient colors with relative negative lightness
+	let l_grad_start = 100 - cue.start_color.lightness();
+	let l_grad_end = 100 - cue.end_color.lightness();
+	let color_grad_start = 'hsl(0,0%,' + l_grad_start + '%)';
+	let color_grad_end = 'hsl(0,0%,' + l_grad_end + '%)';
+
+	//draw line
+	function drawLine(start_h, start_l, end_h, end_l){
+		ctx.beginPath();
+		ctx.lineWidth = 5;
+		let lGrad = transPickerLineCtx.createLinearGradient(start_h, start_l, end_h, end_l);
+			lGrad.addColorStop(0, color_grad_start);
+			lGrad.addColorStop(1, color_grad_end);
+		ctx.strokeStyle = lGrad;
+		ctx.moveTo(start_h, start_l);
+		ctx.lineTo(end_h, end_l);		
+		ctx.stroke();
+	}
+
+	if(cue.wrap_hue){
+		drawLine(start_h, start_l, end_h + transPickerGradCanvas.width, end_l);
+		drawLine(start_h - transPickerGradCanvas.width, start_l, end_h, end_l);
+	}else{
+		drawLine(start_h, start_l, end_h, end_l);
+	}
+
+	//draw end caps
 	function drawEndCap(h, l, strokeStyle, fillStyle){
 		ctx.beginPath();
 		ctx.arc(h, l, 4, 0, 2 * Math.PI);
@@ -158,29 +192,7 @@ function transPickerRedrawLine(cue){
 		ctx.lineWidth = 2;
 		ctx.stroke();
 	}
-	
-	let ctx = transPickerLineCtx;
-	//clear canvas
-	ctx.clearRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
-	//get coordinates
-	let [start_h, start_l] = colorToHLCoords(cue.start_color);
-	let [end_h, end_l] = colorToHLCoords(cue.end_color);
-	//calculate fitting gradient with relative negative lightness
-	let l_grad_start = 100 - cue.start_color.lightness();
-	let l_grad_end = 100 - cue.end_color.lightness();
-	let color_grad_start = 'hsl(0,0%,' + l_grad_start + '%)';
-	let color_grad_end = 'hsl(0,0%,' + l_grad_end + '%)';
-	let lGrad = transPickerLineCtx.createLinearGradient(start_h, start_l, end_h, end_l);
-		lGrad.addColorStop(0, color_grad_start);
-		lGrad.addColorStop(1, color_grad_end);
-	//draw line
-	ctx.beginPath();
-	ctx.moveTo(start_h, start_l);
-	ctx.lineTo(end_h, end_l);
-	ctx.strokeStyle = lGrad;
-	ctx.lineWidth = 5;
-	ctx.stroke();	
-	//draw end caps
+
 	drawEndCap(start_h, start_l, color_grad_start, cue.start_color);
 	drawEndCap(end_h,	end_l, 	 color_grad_end,   cue.end_color);
 }
@@ -210,7 +222,7 @@ function redrawTransitionPickerGradient(){
 	transPickerGradCtx.fillStyle = hGrad;
 	transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
 	
-let vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
+	let vGrad = transPickerGradCtx.createLinearGradient(0, 0, 0, transPickerGradCanvas.height);
 	vGrad.addColorStop(0.49, 'hsla(0,0%,100%,0)');
 	vGrad.addColorStop(1, 'hsla(0,0%,100%,1)');
 	transPickerGradCtx.fillStyle = vGrad;
@@ -333,6 +345,10 @@ function updateReverse(checked){
 	allCues[currentCueIndex].reverse = checked;
 	resetTimes();
 }
+function updateWrapHue(checked){
+	allCues[currentCueIndex].wrap_hue = checked;
+	transPickerRedrawLine(allCues[currentCueIndex]);
+}
 
 //Cue Management
 function indexOfCueItem(elem){
@@ -428,6 +444,7 @@ function updateCueEditorValues(cue){
 	rampParameter.value = cue.ramp_parameter;
 	updateRampParameter(cue.ramp_parameter);
 	reverse.checked = cue.reverse;
+	wrapHue.checked = cue.wrap_hue;
 }
 
 function downloadJSON(){
@@ -493,54 +510,49 @@ function drawLed(index, color){
 	ledRingCtx.stroke();
 };
 
-//interpolate between two colours by applying ramp_type
-function interpolate(start_color, end_color, factor, ramp_type, ramp_parameter){
-	ramp_parameter = typeof ramp_parameter !== 'undefined' ? ramp_parameter : 0.5;
-	
-	//working letiables for HSL
-	let startHSL = {
-		hue 		: start_color.hue(),
-		saturation 	: start_color.saturation(),
-		lightness 	: start_color.lightness()
-	};
-	
-	let endHSL = {
-		hue 		: end_color.hue(),
-		saturation 	: end_color.saturation(),
-		lightness 	: end_color.lightness()
-	};
-	
-	let resultHSL = {
-		hue 		: undefined,
-		saturation 	: undefined,
-		lightness 	: undefined
-	};
-	
-	
+//interpolate between start and end colour of a cue,
+function interpolate(cue, progress){
+	let start_color = cue.start_color;
+	let end_color = cue.end_color;
+	let ramp_type = cue.ramp_type;
+	let ramp_parameter = cue.ramp_parameter;
+	let wrap_hue = cue.wrap_hue;
+
+	function linear(start, end, wrapHue){
+		if (typeof wrapHue === "undefined") wrapHue = false;
+		//factor is a sawtooth function
+		let factor = progress < ramp_parameter ? 
+			progress / ramp_parameter :
+			1 - (progress - ramp_parameter)/(1 - ramp_parameter);
+
+		let delta = end - start;
+		if (wrapHue){
+			let result = start + (delta + 360) * factor;
+			//calculate modulo so that it behaves with negative numbers
+			result = ((result % 360) + 360) % 360;
+			return result;
+		}
+		else{
+			return start + delta * factor;
+		}
+	}
+
 	switch(ramp_type){
 	case "jump":
-		if (factor + 0.02 > ramp_parameter){
+		if (progress + 0.02 > ramp_parameter){
 			return new Color(end_color);
 		} else {
 			return new Color(start_color);
 		}
-		break;
 	case "linearHSL":
-		for(let i in resultHSL){
-			if (factor < ramp_parameter){
-				resultHSL[i] = Math.round( 
-					+(startHSL[i]) + (endHSL[i] - startHSL[i]) * factor/ramp_parameter 
-				);
-			} else {
-				resultHSL[i] = Math.round(
-					+(endHSL[i]) + (startHSL[i] - endHSL[i]) * (factor - ramp_parameter)/(1-ramp_parameter) 
-				);
-			}
-		}	
-		return new Color(resultHSL);
+		let result = new Color();
+		result.hue(			linear(start_color.hue(), 			end_color.hue(), wrap_hue));
+		result.saturation(	linear(start_color.saturation(), 	end_color.saturation()));
+		result.lightness(	linear(start_color.lightness(), 	end_color.lightness()));
+		return result;
 	case "linearRGB":
 		let resultColor = new Color(start_color);
-		resultColor.interpolate(end_color, factor);
+		resultColor.interpolate(end_color, progress);
 		return resultColor;
 	}
 }
@@ -586,9 +598,13 @@ allCues[5].ramp_parameter = 0.5;
 allCues[5].start_color = new Color('hsl(272, 100%, 6%)');
 allCues[5].end_color = new Color('hsl(184, 100%, 51%)');
 
+createCue();
+allCues[6].wrap_hue = true;
+allCues[6].start_color = new Color('hsl(310, 100%, 50%)');
+allCues[6].end_color = new Color('hsl(103, 100%, 95%)');
 
 // first time setup
-openCue(0);
+openCue(6);
 redrawTransitionPickerGradient();
 
 //draw test ring
@@ -612,12 +628,7 @@ window.setInterval(function () {
 		let duration = allCues[currentCueIndex].duration;
 		for(let i = 0; i < numLeds; i++){
 			currentColors.push(new Color(currentCue.start_color));
-			currentColors[i] = interpolate(
-				currentCue.start_color,
-				currentCue.end_color,
-				currentTimes[i]/duration,
-				currentCue.ramp_type,
-				currentCue.ramp_parameter);
+			currentColors[i] = interpolate(currentCue, currentTimes[i]/duration);
 			drawLed(i, currentColors[i]);
 		}
 		

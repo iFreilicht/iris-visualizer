@@ -33,7 +33,10 @@
 				<div>
 					<input type="button" value="More Options" onclick="toggleOptions()"/>
 					<div id="additionalOptions" style="display: none;">
-						<p>Nothing here yet.</p>
+						<div>
+							<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
+							<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
+						</div><br>
 					</div>
 				</div><br>
 				<div>
@@ -43,8 +46,8 @@
 					<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
 				</div><br>
 				<div>
-					<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
-					<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
+					<label for="reverse">Reverse</label>
+					<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
 				</div><br>
 				<div>
 					<label for="rampType">Ramp Type</label><br>
@@ -54,15 +57,17 @@
 						<option value="jump">Jump</option>
 					</select>
 				</div><br>
-				<div>
-					<label for="rampParameter">Ramp Parameter</label><br>
-					<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
-						oninput="updateRampParameter(this.value)"/>
-					<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
-				</div><br>
-				<div>
-					<label for="reverse">Reverse</label>
-					<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
+				<div id="rampTypeSpecificOptions">
+					<div id="rampParameterDiv">
+						<label for="rampParameter">Ramp Parameter</label><br>
+						<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
+							oninput="updateRampParameter(this.value)"/>
+						<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
+					</div><br>
+					<div id="wrapHueDiv">
+						<label for="wrapHue">Wrap Hue</label>
+						<input id="wrapHue" type="checkbox" onchange="updateWrapHue(this.checked)"/>
+					</div>
 				</div>
 			</div>
 			<div id="cueBrowser" class="tablist">
