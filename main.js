@@ -114,12 +114,18 @@ let uploadAnchor = document.getElementById("uploadAnchor");
 //store empty file list now as it cannot be constructed
 let emptyFileList = uploadAnchor.files;
 
+//editor objects
 let duration = document.getElementById("duration");
 let timeDivisor = document.getElementById("timeDivisor");
 let rampType = document.getElementById("rampType");
 let rampParameter = document.getElementById("rampParameter");
 let reverse = document.getElementById("reverse");
 let wrapHue = document.getElementById("wrapHue");
+
+//encapsulating divs
+let rampParameterDiv = document.getElementById("rampParameterDiv");
+let wrapHueDiv = document.getElementById("wrapHueDiv");
+
 
 //Transition Picker variables
 let pickingActive = false;
@@ -332,6 +338,7 @@ function updateRampParameter(value){
 }
 function updateRampType(value){
 	allCues[currentCueIndex].ramp_type = value;
+	updateOptionVisibility(allCues[currentCueIndex]);
 }
 function updateDuration(value){
 	allCues[currentCueIndex].duration = parseInt(value);
@@ -348,6 +355,34 @@ function updateReverse(checked){
 function updateWrapHue(checked){
 	allCues[currentCueIndex].wrap_hue = checked;
 	transPickerRedrawLine(allCues[currentCueIndex]);
+}
+
+function updateCueEditorValues(cue){
+	updateOptionVisibility(cue);
+
+	duration.value = cue.duration;
+	timeDivisor.value = cue.time_divisor;
+	rampType.value = cue.ramp_type;
+	rampParameter.value = cue.ramp_parameter;
+	updateRampParameter(cue.ramp_parameter);
+	reverse.checked = cue.reverse;
+	wrapHue.checked = cue.wrap_hue;
+}
+
+function updateOptionVisibility(cue){
+	switch(cue.ramp_type){
+		case "jump":
+			rampParameterDiv.style.display = "block";
+			wrapHueDiv.style.display = "none";
+			break;
+		case "linearHSL":
+			rampParameterDiv.style.display = "block";
+			wrapHueDiv.style.display = "block";
+			break;
+		default:
+			rampParameterDiv.style.display = "none";
+			wrapHueDiv.style.display = "none";		
+	}
 }
 
 //Cue Management
@@ -435,16 +470,6 @@ function createCue(){
 	cueBrowser.appendChild(template);
 	
 	openCue(id);
-}
-
-function updateCueEditorValues(cue){
-	duration.value = cue.duration;
-	timeDivisor.value = cue.time_divisor;
-	rampType.value = cue.ramp_type;
-	rampParameter.value = cue.ramp_parameter;
-	updateRampParameter(cue.ramp_parameter);
-	reverse.checked = cue.reverse;
-	wrapHue.checked = cue.wrap_hue;
 }
 
 function downloadJSON(){
@@ -538,22 +563,22 @@ function interpolate(cue, progress){
 	}
 
 	switch(ramp_type){
-	case "jump":
-		if (progress + 0.02 > ramp_parameter){
-			return new Color(end_color);
-		} else {
-			return new Color(start_color);
-		}
-	case "linearHSL":
-		let result = new Color();
-		result.hue(			linear(start_color.hue(), 			end_color.hue(), wrap_hue));
-		result.saturation(	linear(start_color.saturation(), 	end_color.saturation()));
-		result.lightness(	linear(start_color.lightness(), 	end_color.lightness()));
-		return result;
-	case "linearRGB":
-		let resultColor = new Color(start_color);
-		resultColor.interpolate(end_color, progress);
-		return resultColor;
+		case "jump":
+			if (progress + 0.02 > ramp_parameter){
+				return new Color(end_color);
+			} else {
+				return new Color(start_color);
+			}
+		case "linearHSL":
+			let result = new Color();
+			result.hue(			linear(start_color.hue(), 			end_color.hue(), wrap_hue));
+			result.saturation(	linear(start_color.saturation(), 	end_color.saturation()));
+			result.lightness(	linear(start_color.lightness(), 	end_color.lightness()));
+			return result;
+		case "linearRGB":
+			let resultColor = new Color(start_color);
+			resultColor.interpolate(end_color, progress);
+			return resultColor;
 	}
 }
 
