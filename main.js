@@ -499,8 +499,8 @@ function uploadJSON(files){
 				return value;
 			});
 			
-			//remove all existing cues
-			for (let i in allCues){
+			//remove all existing cues (store length first because it will change)
+			for (let i = allCues.length; i > 0; i--){
 				deleteCue(0);
 			}
 			
