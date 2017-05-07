@@ -31,7 +31,7 @@
 					<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
 				</div><br>
 				<div>
-					<input type="button" value="More Options" onclick="toggleOptions()"/>
+					<div id="additionalOptionsButton" onclick="toggleOptions()" >&bull;&bull;&bull;</div>
 					<div id="additionalOptions" style="display: none;">
 						<div>
 							<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
@@ -49,15 +49,15 @@
 					<label for="reverse">Reverse</label>
 					<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
 				</div><br>
-				<div>
-					<label for="rampType">Ramp Type</label><br>
-					<select id="rampType" onchange="updateRampType(this.value)">
-						<option value="linearHSL">Linear HSL</option>
-						<option value="linearRGB">Linear RGB</option>
-						<option value="jump">Jump</option>
-					</select>
-				</div><br>
 				<div id="rampTypeSpecificOptions">
+					<div>
+						<label for="rampType">Ramp Type</label><br>
+						<select id="rampType" onchange="updateRampType(this.value)">
+							<option value="linearHSL">Linear HSL</option>
+							<option value="linearRGB">Linear RGB</option>
+							<option value="jump">Jump</option>
+						</select>
+					</div><br>
 					<div id="rampParameterDiv">
 						<label for="rampParameter">Ramp Parameter</label><br>
 						<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 

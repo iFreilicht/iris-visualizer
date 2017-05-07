@@ -6,11 +6,12 @@ h1 {
 body {
 	font-family: helvetica;
 	font-size: 10pt;
+	padding: 10px;
+	margin: 0 auto;
 }
 
-body {
-  padding: 10px;
-  margin: 0 auto;
+div {
+	margin: 0px;
 }
 
 #ringDisplay {
@@ -42,6 +43,24 @@ input[type="button"] {
 
 .deleteCue {
 	float: right;
+}
+
+
+
+#additionalOptionsButton{
+	background-color: grey;
+	padding: 0px;
+	text-align: center;
+}
+
+#additionalOptions{
+	background-color: grey;
+	padding: 10px;
+}
+
+#rampTypeSpecificOptions{
+	background-color: grey;
+	padding: 10px;
 }
 
 #downloadAnchor {
