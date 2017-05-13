@@ -10,8 +10,17 @@ body {
 	margin: 0 auto;
 }
 
+div[hidden], li[hidden] {
+	display: none;
+} 
+
 div {
 	margin: 0px;
+}
+
+ul {
+	margin: 0px;
+	padding: 0px;
 }
 
 #ringDisplay {
@@ -19,19 +28,72 @@ div {
 	float: left;
 }
 
-#cueBrowser {
+#cueBrowserDiv {
 	float: left;
 }
 
-.cueItem {
-	overflow: auto;
-	padding: 2px 0px;
-	background-color: white;
+#cueBrowser {
+	margin: 0px;
+	padding: 0px;
+	list-style-type: none;
 }
 
-.cueItem[active] {
-	overflow: auto;	
-	background-color: darkgrey;
+.listItem {
+	overflow: visible;
+	position: relative;
+	list-style: none;
+	height: 30px;
+	margin: 0px;
+}
+
+.listItem input[type="button"]{
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	height: 100%;
+	text-align: center;
+	width: 20%;
+	padding: 5px 7px;
+	float: right;
+}
+
+.listItem input[type="button"]:hover{
+	background-color: #888!important;
+}
+
+.listItem input[class="openCue"]{
+	text-align: left;
+	width: 60%;
+	float: left;
+}
+
+.listItem[active] input[type="button"]{	
+	background-color: #aaa;
+}
+
+#cueListBrowserDiv {
+	background-color: #aaa;
+	overflow: hidden;
+	padding-bottom: 10px;
+}
+
+.cueList {
+	width: 15%;
+	float: left;
+}
+
+.cueList input[type="button"]{
+	float: left;
+	width: 20%;
+}
+
+.cueList input[class="openCueList"]{
+	float: left;
+	width: 80%;
+}
+
+.cueList input[class="closeCueLists"]{
+	width: 100%;
 }
 
 input[type="button"] {
@@ -45,21 +107,49 @@ input[type="button"] {
 	float: right;
 }
 
+.cueListItem input[type="number"]{
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	height: 69%;
+	width: 20%;
+	padding: 5px 7px;
+	float: left;
+	background-color: #ccc;
+}
 
+.cueListItem .linkButtonDiv{
+	overflow: visible;
+	position: relative;
+	height: 100%!important;
+	width: 20%;
+	float: right;
+}
+
+.cueListItem .linkButton{
+	position: absolute;
+	top: 15px;
+	width: 100%!important;
+}
+
+#cueListEditor {
+	min-height: 30px;
+	padding-bottom: 15px;
+}
 
 #additionalOptionsButton{
-	background-color: grey;
+	background-color: #888;
 	padding: 0px;
 	text-align: center;
 }
 
 #additionalOptions{
-	background-color: grey;
+	background-color: #888;
 	padding: 10px;
 }
 
 #rampTypeSpecificOptions{
-	background-color: grey;
+	background-color: #888;
 	padding: 10px;
 }
 
@@ -77,21 +167,16 @@ input[type="button"] {
 	cursor: pointer;
 }
 
-#cueBrowser Button {
-	margin: 5px;
-	float: bottom;
-}
-
 #cueBrowserControls {
 	padding: 3px;
 	margin: 0px 0px 3px 3px;
-	border: 2px solid darkgrey;
+	border: 2px solid #aaa;
 	background-color: #eee
 }
 
-#cueEditor {
+#editor {
 	padding: 10px;
-	background-color: darkgrey;
+	background-color: #aaa;
 	float: left;
 }
 

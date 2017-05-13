@@ -10,67 +10,92 @@
 
   <body>
 	<header>
-		<h1>Freilite Iris Visualizer (Ver. 0.1.2)</h1>
+		<h1>Freilite Iris Visualizer (Ver. 0.2)</h1>
 		<p id="output"></p>
 	</header>
 	<main>
-		<div id="ringDisplay">
-			<canvas id="ledRingCanvas" width="400" height="400">Your browser does not support the HTML5 canvas tag.</canvas>
+		<div id="cueListBrowserDiv">
+			<li id="cueListTemplate" class="cueList listItem" hidden cueListID="Infinity">
+				<input type="button" value="CueListTmp" class="openCueList"/>
+				<input type="button" value="✘" class="deleteCueList"/>
+			</li>				
+			<ul id="cueListBrowser">
+				<!--This is populated dynamically-->
+			</ul>
+			<input type="button" value="+" class="createCueList" onclick="createCueList()"/>
 		</div>
 		<div>
-			<div id="cueTemplate" class="cueItem" style="display: none" cue_id="Infinity">
-				<input type="button" value="CueTmp" class="openCue"/>
-				<input type="button" value="&#x2718;" class="deleteCue"/>
+			<div id="ringDisplay">
+				<canvas id="ledRingCanvas" width="300" height="300">Your browser does not support the HTML5 canvas tag.</canvas>
 			</div>
-		</div>
-		<div>
-			<div id="cueEditor">
+			<div id="editor">
 				<div id="transitionPicker" showcursor>
 					<canvas id="transitionPickerHLGradient" width="300" height="200"></canvas>
 					<canvas id="transitionPickerHLLine" width="300" height="200"></canvas>
 					<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
 				</div><br>
-				<div>
-					<div id="additionalOptionsButton" onclick="toggleOptions()" >&bull;&bull;&bull;</div>
-					<div id="additionalOptions" style="display: none;">
-						<div>
-							<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
-							<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
-						</div><br>
-					</div>
-				</div><br>
-				<div>
-				</div>
-				<div>
-					<label for="duration">Duration (ms)</label><br>
-					<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
-				</div><br>
-				<div>
-					<label for="reverse">Reverse</label>
-					<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
-				</div><br>
-				<div id="rampTypeSpecificOptions">
+				<div id="cueEditor" hidden>
 					<div>
-						<label for="rampType">Ramp Type</label><br>
-						<select id="rampType" onchange="updateRampType(this.value)">
-							<option value="linearHSL">Linear HSL</option>
-							<option value="linearRGB">Linear RGB</option>
-							<option value="jump">Jump</option>
-						</select>
+						<div id="additionalOptionsButton" onclick="toggleOptions()" >•••</div>
+						<div id="additionalOptions" hidden>
+							<div>
+								<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
+								<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
+							</div><br>
+						</div>
 					</div><br>
-					<div id="rampParameterDiv">
-						<label for="rampParameter">Ramp Parameter</label><br>
-						<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
-							oninput="updateRampParameter(this.value)"/>
-						<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
-					</div><br>
-					<div id="wrapHueDiv">
-						<label for="wrapHue">Wrap Hue</label>
-						<input id="wrapHue" type="checkbox" onchange="updateWrapHue(this.checked)"/>
+					<div>
 					</div>
+					<div>
+						<label for="duration">Duration (ms)</label><br>
+						<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
+					</div><br>
+					<div>
+						<label for="reverse">Reverse</label>
+						<input id="reverse" type="checkbox" onchange="updateReverse(this.checked)"/>
+					</div><br>
+					<div id="rampTypeSpecificOptions">
+						<div>
+							<label for="rampType">Ramp Type</label><br>
+							<select id="rampType" onchange="updateRampType(this.value)">
+								<option value="linearHSL">Linear HSL</option>
+								<option value="linearRGB">Linear RGB</option>
+								<option value="jump">Jump</option>
+							</select>
+						</div><br>
+						<div id="rampParameterDiv">
+							<label for="rampParameter">Ramp Parameter</label><br>
+							<input id="rampParameter" type="range" min="0" max="1" value="1" step="0.01" 
+								oninput="updateRampParameter(this.value)"/>
+							<label for="rampParameter">(<span id="rampParameterDisplay">9999</span>)</label>
+						</div><br>
+						<div id="wrapHueDiv">
+							<label for="wrapHue">Wrap Hue</label>
+							<input id="wrapHue" type="checkbox" onchange="updateWrapHue(this.checked)"/>
+						</div>
+					</div>
+				</div><br>
+				<div>
+					<li id="cueListItemTemplate" class="cueListItem listItem" cueID="Infinity" hidden draggable="true" ondragstart="dragCueListItem(this, event)">
+						<input type="button" value="CueTmp" class="openCue"/>
+						<div class="linkButtonDiv">
+							<input type="button" value="🔗" class="linkButton"/>
+						</div>
+						<input type="button" value="9999" class="cueListItemDelay"/>
+					</li>
+					<ul id="cueListEditor"  ondrop="dropCueIntoList(event)" ondragover="event.preventDefault()">
+						<!--This is populated dynamically-->
+					</ul>
 				</div>
 			</div>
-			<div id="cueBrowser" class="tablist">
+			<div id="cueBrowserDiv">
+				<ul>
+					<li id="cueTemplate" class="cueItem listItem" hidden cueID="Infinity" draggable="true" ondragstart="dragCue(this, event)">
+						<input type="button" value="CueTmp" class="openCue"/>
+						<input type="button" value="•••" class="optionsCue"/>
+						<input type="button" value="✘" class="deleteCue"/>
+					</li>
+				</ul>
 				<div id="cueBrowserControls">
 					<a id="downloadAnchor"></a>
 					<input id="downloadButton" type="button" value="Save" onclick="downloadJSON()"/>
@@ -79,8 +104,11 @@
 					<br>
 					<input type="button" value="Create New Cue" id="createCueButton" onclick="createCue()"/>
 				</div>
+				<ul id="cueBrowser">
+					<!--This is populated dynamically-->
+				</ul>
 			</div>
-		<div>
+		</div>
 	</main>
 	<script src="color/Color.js"></script>
     <script src="main.js"></script>
