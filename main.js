@@ -361,8 +361,12 @@
 //Additional Options Collapsible
 	let add = document.getElementById("additionalOptions");
 	function toggleOptions(){
-		additionalOptions.style.display = 
-			additionalOptions.style.display === "block" ? "none" : "block";
+		if(additionalOptions.hidden){
+			additionalOptions.removeAttribute("hidden");
+		}
+		else{
+			additionalOptions.setAttribute("hidden", undefined)
+		}
 	}
 //---
 
@@ -404,16 +408,16 @@
 	function updateOptionVisibility(cue){
 		switch(cue.ramp_type){
 			case "jump":
-				rampParameterDiv.style.display = "block";
-				wrapHueDiv.style.display = "none";
+				rampParameterDiv.removeAttribute("hidden");
+				wrapHueDiv.setAttribute("hidden", undefined);
 				break;
 			case "linearHSL":
-				rampParameterDiv.style.display = "block";
-				wrapHueDiv.style.display = "block";
+				rampParameterDiv.removeAttribute("hidden");
+				wrapHueDiv.removeAttribute("hidden");
 				break;
 			default:
-				rampParameterDiv.style.display = "none";
-				wrapHueDiv.style.display = "none";		
+				rampParameterDiv.setAttribute("hidden", undefined);
+				wrapHueDiv.setAttribute("hidden", undefined);		
 		}
 	}
 //---
@@ -466,7 +470,7 @@
 	function createCue(){
 		let id = smallestUnusedID(allCues); 
 		let template = document.getElementById("cueTemplate").cloneNode(true);
-		template.style.display = "block";
+		template.removeAttribute("hidden");
 		template.setAttribute("cueID", id);
 		template.removeAttribute("id");
 		
@@ -586,7 +590,7 @@
 
 	function createCueListItem(id){
 		let template = document.getElementById("cueListItemTemplate").cloneNode(true);
-		template.style.display = "block";
+		template.removeAttribute("hidden");
 		template.setAttribute("cueID", id);
 		template.removeAttribute("id");
 
@@ -608,7 +612,7 @@
 	function createCueList(){
 		let id = smallestUnusedID(allCueLists); 
 		let template = document.getElementById("cueListTemplate").cloneNode(true);
-		template.style.display = "block";
+		template.removeAttribute("hidden");
 		template.setAttribute("cueListID", id);
 		template.removeAttribute("id");
 		

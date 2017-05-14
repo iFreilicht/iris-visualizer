@@ -35,8 +35,8 @@
 					<canvas id="transitionPickerHLDot" width="300" height="200"></canvas>
 				</div><br>
 				<div id="cueEditor" hidden>
-					<div>
-						<div id="additionalOptionsButton" onclick="toggleOptions()" >•••</div>
+					<div id="additionalOptionsDiv">
+						<div id="additionalOptionsButton" type="button" onclick="toggleOptions()" >•••</div>
 						<div id="additionalOptions" hidden>
 							<div>
 								<label for="timeDivisor">Time divisor: (Recommended: divisors of 12)</label><br>
@@ -44,9 +44,7 @@
 							</div><br>
 						</div>
 					</div><br>
-					<div>
-					</div>
-					<div>
+					<div id="durationDiv">
 						<label for="duration">Duration (ms)</label><br>
 						<input id="duration" type="number" min="1" value="9999" oninput="updateDuration(this.value)"/>
 					</div><br>
@@ -100,7 +98,7 @@
 					<a id="downloadAnchor"></a>
 					<input id="downloadButton" type="button" value="Save" onclick="downloadJSON()"/>
 					<input id="uploadAnchor" type="file" onchange="uploadJSON(this.files); this.value=null; return false;"/>
-					<label id="uploadButton" for="uploadAnchor">Load</label>
+					<label id="uploadButton" type="button" for="uploadAnchor">Load</label>
 					<br>
 					<input type="button" value="Create New Cue" id="createCueButton" onclick="createCue()"/>
 				</div>

@@ -10,7 +10,7 @@ body {
 	margin: 0 auto;
 }
 
-div[hidden], li[hidden] {
+[hidden] {
 	display: none;
 } 
 
@@ -57,8 +57,8 @@ ul {
 	float: right;
 }
 
-.listItem input[type="button"]:hover{
-	background-color: #888!important;
+[type="button"]:hover{
+	background-color: #555!important;
 }
 
 .listItem input[class="openCue"]{
@@ -67,7 +67,7 @@ ul {
 	float: left;
 }
 
-.listItem[active] input[type="button"]{	
+.listItem[active] [type="button"]{	
 	background-color: #aaa;
 }
 
@@ -82,7 +82,7 @@ ul {
 	float: left;
 }
 
-.cueList input[type="button"]{
+.cueList [type="button"]{
 	float: left;
 	width: 20%;
 }
@@ -96,11 +96,12 @@ ul {
 	width: 100%;
 }
 
-input[type="button"] {
-	border: 1px solid #ccc;
+[type="button"] {
+	border: none;
 	padding: 2px 5px;
 	margin: 4px 8px;
 	cursor: pointer;
+	background-color: #ddd;
 }
 
 .deleteCue {
@@ -139,8 +140,9 @@ input[type="button"] {
 
 #additionalOptionsButton{
 	background-color: #888;
-	padding: 0px;
+	margin: 0px;
 	text-align: center;
+	cursor: pointer;
 }
 
 #additionalOptions{
@@ -158,13 +160,6 @@ input[type="button"] {
 }
 #uploadAnchor {
 	display: none;
-}
-#uploadButton {
-	border: 1px solid #ccc;
-	background-color: #ddd;
-	padding: 2px 5px;
-	font-size: 10pt;
-	cursor: pointer;
 }
 
 #cueBrowserControls {
