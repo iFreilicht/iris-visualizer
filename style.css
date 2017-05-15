@@ -1,3 +1,12 @@
+.ledHitbox {
+	cursor: pointer;
+	position: absolute;
+	height: 40px;
+	width: 16px;
+	border: 1px black;
+	float: left;
+}
+
 h1 {
   font-family: helvetica;
   text-align: center;
@@ -26,6 +35,7 @@ ul {
 #ringDisplay {
 	margin-right: 0;
 	float: left;
+	position: relative;
 }
 
 #cueBrowserDiv {

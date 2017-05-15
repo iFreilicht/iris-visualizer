@@ -73,7 +73,7 @@
 	Cue.prototype.toJSON = function(){
 		//leave out all unused fields for now
 		return {
-			//channels: this.channels,
+			channels: this.channels,
 			reverse: this.reverse,
 			wrap_hue: this.wrap_hue,
 			time_divisor: this.time_divisor,
@@ -129,6 +129,8 @@
 //---
 
 //get document elements
+	let ringDisplay = document.getElementById("ringDisplay");
+	let ledHitboxDiv = document.getElementById("ledHitboxDiv");
 	let ledRingCanvas = document.getElementById("ledRingCanvas");
 	let ledRingCtx = ledRingCanvas.getContext("2d");
 
@@ -145,6 +147,10 @@
 		
 	let rampParameterDisplay = document.getElementById("rampParameterDisplay");
 	let output = document.getElementById("output");
+
+	let editChannelsInstructions = document.getElementById("editChannelsInstructions");
+	let channelEditStartButton = document.getElementById("channelEditStartButton");
+	let channelEditStopButton = document.getElementById("channelEditStopButton");
 
 	let cueBrowser = document.getElementById("cueBrowser");
 
@@ -365,12 +371,12 @@
 			additionalOptions.removeAttribute("hidden");
 		}
 		else{
-			additionalOptions.setAttribute("hidden", undefined)
+			additionalOptions.setAttribute("hidden", undefined);
 		}
 	}
 //---
 
-//Event Handlers for simple options:
+//Event Handlers for options:
 	function updateRampParameter(value){
 		allCues[currentCueID].ramp_parameter = value;
 		rampParameterDisplay.innerHTML = value;
@@ -420,6 +426,24 @@
 				wrapHueDiv.setAttribute("hidden", undefined);		
 		}
 	}
+
+	function startChannelEditing(){
+		channelEditStartButton.setAttribute("hidden", undefined);
+		ledHitboxDiv.removeAttribute("hidden");
+		channelEditStopButton.removeAttribute("hidden");
+		editChannelsInstructions.removeAttribute("hidden");
+	}
+
+	function stopChannelEditing(){
+		channelEditStartButton.removeAttribute("hidden");
+		ledHitboxDiv.setAttribute("hidden", undefined);
+		channelEditStopButton.setAttribute("hidden", undefined);
+		editChannelsInstructions.setAttribute("hidden", undefined);
+	}
+
+	function toggleChannel(ledID){
+		allCues[currentCueID].channels[ledID] ^= true;
+	}
 //---
 
 //Cue Management
@@ -432,6 +456,7 @@
 		//Better render a few false frames than let the display die
 		let elem = cueBrowserItemByCueID(index);
 		if (elem != null){
+			stopChannelEditing();
 			elem.removeAttribute("active");
 			transPickerClearLine();
 		}
@@ -741,6 +766,37 @@
 		);
 		ledRingCtx.stroke();
 	};
+
+	function setupLedHitboxes(){
+		let originalTemplate = document.getElementById("ledHitboxTemplate");
+		let centerTop = (ledRingCanvas.height - originalTemplate.getBoundingClientRect().height)/2;
+		let centerLeft = (ledRingCanvas.width - originalTemplate.getBoundingClientRect().width)/2;
+
+
+		for(let id = 0; id < numLeds; id++){
+			
+			let template = document.getElementById("ledHitboxTemplate").cloneNode(true);
+			template.removeAttribute("hidden");
+			template.setAttribute("ledID", id);
+			template.removeAttribute("id");
+
+			//calculate new position
+			let angleDeg = -90 + id * (360 / numLeds);
+			let angleRad = angleDeg * Math.PI / 180;
+			let top = centerTop + Math.sin(angleRad) * ringR * canvasScale;
+			let left = centerLeft + Math.cos(angleRad) * ringR * canvasScale;
+
+			template.style.top = top + "px";
+			template.style.left = left + "px";
+			template.style.transform = "rotate(" + angleDeg + "deg)";
+
+			template.addEventListener("mouseover", function(){hoverChannel(id)});
+			template.addEventListener("mouseout", function(){hoverChannel(NaN)});
+			template.addEventListener("click", function(){toggleChannel(id)});
+
+			ledHitboxDiv.appendChild(template);
+		}
+	}
 //---
 
 //interpolate between start and end colour of a cue
@@ -882,7 +938,7 @@ function drawCue(id){
 
 //*
 //Main loop
-
+	setupLedHitboxes();
 //TODO: Remove this!
 	createCue();
 	allCues[7].channels = [true, true, true, true, true, true, false, false, false, false, false, false];

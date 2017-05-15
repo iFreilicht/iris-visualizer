@@ -26,7 +26,11 @@
 		</div>
 		<div>
 			<div id="ringDisplay">
-				<canvas id="ledRingCanvas" width="300" height="300">Your browser does not support the HTML5 canvas tag.</canvas>
+					<canvas id="ledRingCanvas" width="300" height="300">Your browser does not support the HTML5 canvas tag.</canvas>
+					<div class="ledHitbox" id="ledHitboxTemplate"></div>
+					<div id="ledHitboxDiv" hidden>
+						<!--This is populated dynamically-->
+					</div>
 			</div>
 			<div id="editor">
 				<div id="transitionPicker" showcursor>
@@ -43,6 +47,11 @@
 								<input id="timeDivisor" type="number" min="1" value="9999" oninput="updateTimeDivisor(this.value)"/>
 							</div><br>
 						</div>
+					</div><br>
+					<div id="editChannelsDiv">
+						<input id="channelEditStartButton" type="button" value="Edit Active Channels" onclick="startChannelEditing()"/>
+						<input hidden id="channelEditStopButton" type="button" value="Stop Editing Channels" onclick="stopChannelEditing()"/>
+						<p id="editChannelsInstructions" hidden>Click on LEDs to toggle them.</p>
 					</div><br>
 					<div id="durationDiv">
 						<label for="duration">Duration (ms)</label><br>
