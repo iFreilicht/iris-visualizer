@@ -81,28 +81,28 @@ ul {
 	background-color: #aaa;
 }
 
-#cueListBrowserDiv {
+#scheduleBrowserDiv {
 	background-color: #aaa;
 	overflow: hidden;
 	padding-bottom: 10px;
 }
 
-.cueList {
+.schedule {
 	width: 15%;
 	float: left;
 }
 
-.cueList [type="button"]{
+.schedule [type="button"]{
 	float: left;
 	width: 20%;
 }
 
-.cueList input[class="openCueList"]{
+.schedule input[class="openSchedule"]{
 	float: left;
 	width: 80%;
 }
 
-.cueList input[class="closeCueLists"]{
+.schedule input[class="closeSchedules"]{
 	width: 100%;
 }
 
@@ -118,15 +118,15 @@ ul {
 	float: right;
 }
 
-.cueListItem {
+.period {
 	width: 20%;
 }
 
-.cueListItemOptions {
+.periodOptions {
 	width: 40%!important;
 }
 
-#cueListProgressBar {
+#scheduleProgressBar {
 	position: absolute;
 	height: 20px;
 	width: 2px;
@@ -134,7 +134,7 @@ ul {
 	background-color: #000
 }
 
-#cueListEditor {
+#scheduleEditor {
 	min-height: 30px;
 	padding-bottom: 15px;
 }

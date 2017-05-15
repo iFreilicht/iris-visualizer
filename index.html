@@ -14,15 +14,15 @@
 		<p id="output"></p>
 	</header>
 	<main>
-		<div id="cueListBrowserDiv">
-			<li id="cueListTemplate" class="cueList listItem" hidden cueListID="Infinity">
-				<input type="button" value="CueListTmp" class="openCueList"/>
-				<input type="button" value="✘" class="deleteCueList"/>
+		<div id="scheduleBrowserDiv">
+			<li id="scheduleTemplate" class="schedule listItem" hidden scheduleID="Infinity">
+				<input type="button" value="ScheduleTmp" class="openSchedule"/>
+				<input type="button" value="✘" class="deleteSchedule"/>
 			</li>				
-			<ul id="cueListBrowser">
+			<ul id="scheduleBrowser">
 				<!--This is populated dynamically-->
 			</ul>
-			<input type="button" value="+" class="createCueList" onclick="createCueList()"/>
+			<input type="button" value="+" class="createSchedule" onclick="createSchedule()"/>
 		</div>
 		<div>
 			<div id="ringDisplay">
@@ -82,19 +82,20 @@
 						</div>
 					</div>
 				</div><br>
-				<div id="cueListEditorDiv">
+				<div id="scheduleEditorDiv">
 					<div>
-						<label for="cueListEditorTimescale">Total Time on scale:</label>
-						<input id="cueListEditorTimescale" type="number"/>
+						<label for="scheduleEditorTimescale">Total Time on scale:</label>
+						<input id="scheduleEditorTimescale" type="number"/>
 					</div>
-					<li id="cueListItemTemplate" class="cueListItem listItem" cueID="Infinity" hidden draggable="false" ondragstart="dragCueListItem(this, event)">
+					<li id="periodTemplate" class="period listItem" cueID="Infinity" hidden draggable="false" ondragstart="dragPeriod(this, event)">
 						<input type="button" value="CueTmp" class="openCue"/>
-						<input type="button" value="•••" class="cueListItemOptions"/>
+						<input type="button" value="•••" class="periodOptions"/>
+
 					</li>
 					<div>
-						<div id="cueListProgressBar">
+						<div id="scheduleProgressBar">
 						</div>
-						<ul id="cueListEditor"  ondrop="dropCueIntoList(event)" ondragover="event.preventDefault()">
+						<ul id="scheduleEditor"  ondrop="dropCueIntoSchedule(event)" ondragover="event.preventDefault()">
 							<!--This is populated dynamically-->
 						</ul>
 					</div>

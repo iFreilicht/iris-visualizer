@@ -41,12 +41,12 @@
 		return document.querySelector('.cueItem[cueID="' + id + '"]');
 	}
 
-	function cueListBrowserItemByCueListID(id){
-		return document.querySelector('.cueList[cueListID="' + id + '"]');
+	function scheduleBrowserItemByScheduleID(id){
+		return document.querySelector('.schedule[scheduleID="' + id + '"]');
 	}
 
-	function cueListItemByCueID(id){
-		return document.querySelector('.cueListItem[cueID="' + id + '"]');
+	function periodByCueID(id){
+		return document.querySelector('.period[cueID="' + id + '"]');
 	}
 //---
 
@@ -88,26 +88,25 @@
 	}
 //---
 
-//CueList Type
+//Schedule Type
 	//p is an optional parameter object
-	function CueList(p){
+	function Schedule(p){
 		if (typeof p == "undefined"){
 			p = {};
 		}
 		
-		this.items = defaultValue(p.items, {});
+		this.periods = defaultValue(p.periods, {});
 	}
 //---
 
-//CueListItem Type
+//Period Type
 	//p is an optional parameter object
-	function CueListItem(p){
+	function Period(p){
 		if (typeof p == "undefined"){
 			p = {};
 		}
 
 		this.cue_id = defaultValue(p.cue_id, NaN);
-		this.start_stop = defaultValue(p.start_stop, "start");
 		this.delay = defaultValue(p.delay, 0);
 	}
 //---
@@ -154,10 +153,10 @@
 
 	let cueBrowser = document.getElementById("cueBrowser");
 
-	let cueListEditor = document.getElementById("cueListEditor");
-	let cueListProgressBar = document.getElementById("cueListProgressBar");
+	let scheduleEditor = document.getElementById("scheduleEditor");
+	let scheduleProgressBar = document.getElementById("scheduleProgressBar");
 
-	let cuelistBrowser = document.getElementById("cueListBrowser");
+	let scheduleBrowser = document.getElementById("scheduleBrowser");
 
 	let uploadAnchor = document.getElementById("uploadAnchor");
 	//store empty file list now as it cannot be constructed later
@@ -447,14 +446,14 @@
 	}
 //---
 
-//Cue List Editor helpers, functions and event handlers
-	function totalDuration(cueListID){
-		let currList = allCueLists[cueListID];
+//Schedule Editor helpers, functions and event handlers
+	function totalDuration(scheduleID){
+		let schedule = allSchedules[scheduleID];
 		let total = 0;
 
-		for(let i in currList.items){
-			let cueItem = currList.items[i];
-			let t = cueItem.delay + allCues[cueItem.cue_id].duration;
+		for(let i in schedule.periods){
+			let period = schedule.periods[i];
+			let t = period.delay + allCues[period.cue_id].duration;
 			if(t > total){
 				total = t;
 			}
@@ -464,21 +463,21 @@
 	}
 
 	function updateProgressBarHeight(){
-		cueListProgressBar.style.height = cueListEditor.getBoundingClientRect().height + "px";
+		scheduleProgressBar.style.height = scheduleEditor.getBoundingClientRect().height + "px";
 	}
 
 	function updateProgressBarPosition(){
-		let baseline = cueListEditor.getBoundingClientRect().left;
+		let baseline = scheduleEditor.getBoundingClientRect().left;
 		let rightmost = 0;
-		for(let listItem of cueListEditor.children){
+		for(let listItem of scheduleEditor.children){
 			let right = listItem.getBoundingClientRect().right - baseline;
 			if(right > rightmost){
 				rightmost = right;
 			}
 		}
 
-		let progress = currentTime / totalDuration(currentCueListID);
-		cueListProgressBar.style.left = baseline + progress * rightmost + "px";
+		let progress = currentTime / totalDuration(currentScheduleID);
+		scheduleProgressBar.style.left = baseline + progress * rightmost + "px";
 	}
 //---
 
@@ -495,12 +494,13 @@
 			stopChannelEditing();
 			elem.removeAttribute("active");
 			transPickerClearLine();
+			currentCueID = NaN;
 		}
 	}
 
 	function openCue(index){
 		closeCue(currentCueID);
-		closeCueList(currentCueListID);
+		closeSchedule(currentScheduleID);
 		openCueEditor();
 
 		currentCueID = index;
@@ -517,12 +517,12 @@
 		if (numKeys(allCues) <= 0){
 			return;
 		}
-		if (currentCueID === index){
+		if (currentCueID == index){
 			closeCue(index);
 		}
 		
 		cueBrowser.removeChild(cueBrowserItemByCueID(index));
-		deleteCueListItems(index);
+		deletePeriods(index);
 		delete allCues[index];
 	}
 
@@ -553,7 +553,7 @@
 	}
 
 	function openCueEditor(){
-		closeCueListEditor();
+		closeScheduleEditor();
 		cueEditor.removeAttribute("hidden");
 	}
 
@@ -612,30 +612,29 @@
 	}
 //---
 
-//Cue List management
-	let currentCueListID = NaN;
-	let allCueLists = {};
+//Schedule management
+	let currentScheduleID = NaN;
+	let allSchedules = {};
 
-	function deleteCueListItems(index){
-		let item = cueListItemByCueID(index);
-		while(item !== null){
-			cueListEditor.removeChild(item);
-			item = cueListItemByCueID(index);
+	function deletePeriods(index){
+		let period; 
+		while((period = periodByCueID(index)) !== null){
+			scheduleEditor.removeChild(period);
 		}
 
-		for(let i in allCueLists){
-			for(let j in allCueLists[i].items){
-				if(allCueLists[i].items[j].cue_id === index){
-					delete allCueLists[i].items[j];
+		for(let i in allSchedules){
+			for(let j in allSchedules[i].periods){
+				if(allSchedules[i].periods[j].cue_id == index){
+					delete allSchedules[i].periods[j];
 				}
 			}
 		}
 	}
 
-	function dropCueIntoList(event){
+	function dropCueIntoSchedule(event){
 		let cueID = event.dataTransfer.getData("cueID");
 		if (event.dataTransfer.getData("task") === "copy"){
-			addCueListItem(cueID);
+			addPeriod(cueID);
 		}
 	}
 
@@ -644,17 +643,17 @@
 		event.dataTransfer.setData("cueID", elem.getAttribute("cueID"));
 	}
 
-	function dragCueListItem(elem, event){
+	function dragPeriod(elem, event){
 		event.dataTransfer.setData("task", "reorder");
 		event.dataTransfer.setData("cueID", elem.getAttribute("cueID"));
 	}
 
-	function createCueListItem(id){
-		let cueListItemID = smallestUnusedID(allCueLists[currentCueListID].items);
-		let template = document.getElementById("cueListItemTemplate").cloneNode(true);
+	function createPeriod(id){
+		let periodID = smallestUnusedID(allSchedules[currentScheduleID].periods);
+		let template = document.getElementById("periodTemplate").cloneNode(true);
 		template.removeAttribute("hidden");
 		template.setAttribute("cueID", id);
-		template.setAttribute("cueListItemID", cueListItemID);
+		template.setAttribute("periodID", periodID);
 		template.removeAttribute("id");
 
 		//Modify openCue button from template
@@ -664,7 +663,7 @@
 		
 
 		template.addEventListener("mousedown", function(event){
-			let leftLower = cueListEditor.getBoundingClientRect().left + event.offsetX;
+			let leftLower = scheduleEditor.getBoundingClientRect().left + event.offsetX;
 			let start = event.pageX;
 			let diff = 0;
 			
@@ -684,99 +683,99 @@
 		});
 	
 		//display fully prepared element
-		cueListEditor.appendChild(template);
+		scheduleEditor.appendChild(template);
 		updateProgressBarHeight();
 	}
 
-	function addCueListItem(id){
-		createCueListItem(id);
-		let itemID = smallestUnusedID(allCueLists[currentCueListID].items);
-		allCueLists[currentCueListID].items[itemID] = new CueListItem({cue_id: id});
+	function addPeriod(id){
+		createPeriod(id);
+		let itemID = smallestUnusedID(allSchedules[currentScheduleID].periods);
+		allSchedules[currentScheduleID].periods[itemID] = new Period({cue_id: id});
 	}
 
-	function createCueList(){
-		let id = smallestUnusedID(allCueLists); 
-		let template = document.getElementById("cueListTemplate").cloneNode(true);
+	function createSchedule(){
+		let id = smallestUnusedID(allSchedules); 
+		let template = document.getElementById("scheduleTemplate").cloneNode(true);
 		template.removeAttribute("hidden");
-		template.setAttribute("cueListID", id);
+		template.setAttribute("scheduleID", id);
 		template.removeAttribute("id");
 		
 		//Modify openCue button from template
-		let openCueListButton = template.getElementsByClassName("openCueList")[0];
-		openCueListButton.value = "Cue List " + id;
-		openCueListButton.addEventListener("click", function(){openCueList(id)});
+		let openScheduleButton = template.getElementsByClassName("openSchedule")[0];
+		openScheduleButton.value = "Schedule " + id;
+		openScheduleButton.addEventListener("click", function(){openSchedule(id)});
 		
 		//Modify deleteCue button from template
-		let deleteCueListButton = template.getElementsByClassName("deleteCueList")[0];
-		deleteCueListButton.addEventListener("click", function(){deleteCueList(id)});
+		let deleteScheduleButton = template.getElementsByClassName("deleteSchedule")[0];
+		deleteScheduleButton.addEventListener("click", function(){deleteSchedule(id)});
 		
-		//create CueList object
-		let cueList = new CueList();
-		allCueLists[id] = cueList;
+		//create Schedule object
+		let schedule = new Schedule();
+		allSchedules[id] = schedule;
 		
 		//display fully prepared element
-		cueListBrowser.appendChild(template);
+		scheduleBrowser.appendChild(template);
 		
-		openCueList(id);
+		openSchedule(id);
 	}
 
-	function openCueList(index){
+	function openSchedule(index){
 		closeCue(currentCueID);
-		closeCueList(currentCueListID);
-		openCueListEditor();
+		closeSchedule(currentScheduleID);
+		openScheduleEditor();
 
-		currentCueListID = index;
-		let cueList = allCueLists[index];
+		currentScheduleID = index;
+		let schedule = allSchedules[index];
 
-		let cueListObject = cueListBrowserItemByCueListID(index);
-		cueListObject.setAttribute("active", "");
+		let scheduleObject = scheduleBrowserItemByScheduleID(index);
+		scheduleObject.setAttribute("active", "");
 
-		for(let i in cueList.items){
-			createCueListItem(cueList.items[i].cue_id);
+		for(let i in schedule.periods){
+			createPeriod(schedule.periods[i].cue_id);
 		}
 
 		resetTime();
 	}
 
-	function openCueListEditor(){
+	function openScheduleEditor(){
 		closeCueEditor();
-		cueListEditor.removeAttribute("hidden");
-		cueListProgressBar.removeAttribute("hidden");
+		scheduleEditor.removeAttribute("hidden");
+		scheduleProgressBar.removeAttribute("hidden");
 	}
 
-	function closeCueListEditor(){
-		cueListEditor.setAttribute("hidden", "");
-		cueListProgressBar.setAttribute("hidden", "");
+	function closeScheduleEditor(){
+		scheduleEditor.setAttribute("hidden", "");
+		scheduleProgressBar.setAttribute("hidden", "");
 	}
 
-	function closeCueList(index){
-		index = defaultValue(index, currentCueListID);
-		let elem = cueListBrowserItemByCueListID(index);
+	function closeSchedule(index){
+		index = defaultValue(index, currentScheduleID);
+		let elem = scheduleBrowserItemByScheduleID(index);
 		if (elem != null){
 			elem.removeAttribute("active");
 			transPickerClearLine();
-			clearCueListEditor();
-			currentCueListID = NaN;
+			clearScheduleEditor();
+			currentScheduleID = NaN;
 		}
 	}
 
-	function deleteCueList(index){
-		if (numKeys(allCueLists) <= 0){
+	function deleteSchedule(index){
+		if (numKeys(allSchedules) <= 0){
 			return;
 		}
-		if (currentCueListID == index){
-			closeCueList(index);
+		if (currentScheduleID == index){
+			closeSchedule(index);
 		}
 		
-		cueListBrowser.removeChild(cueListBrowserItemByCueListID(index));
-		delete allCueLists[index];
+		scheduleBrowser.removeChild(scheduleBrowserItemByScheduleID(index));
+		delete allSchedules[index];
 		
-		currentCueListID = NaN;
+		currentScheduleID = NaN;
 	}
 
-	function clearCueListEditor(){
-		for(let i = cueListEditor.children.length; i > 0; i--){
-			cueListEditor.removeChild(cueListEditor.children[0]);
+	function clearScheduleEditor(){
+		for(let i = scheduleEditor.children.length; i > 0; i--){
+			scheduleEditor.removeChild(scheduleEditor.children[0]);
 		}
 	}
 //---
@@ -1009,31 +1008,31 @@ function drawCue(id){
 	allCues[8].reverse = true;
 	allCues[8].channels = [false, false, false, false, false, false, true, true, true, true, true, true];
 
-	createCueList();
-	allCueLists[0].items = {
-		0: new CueListItem({cue_id: 8}),
-		1: new CueListItem({cue_id: 7})
+	createSchedule();
+	allSchedules[0].periods = {
+		0: new Period({cue_id: 8}),
+		1: new Period({cue_id: 7})
 	};
 	
-	openCueList(0);
+	openSchedule(0);
 //---
 
 window.setInterval(function () {
-	if(currentCueListID >= 0){
-		let currList = allCueLists[currentCueListID];
+	if(currentScheduleID >= 0){
+		let schedule = allSchedules[currentScheduleID];
 
-		//determine total duration of cue list
-		let totalDur = totalDuration(currentCueListID);
+		//determine total duration of schedule
+		let totalDur = totalDuration(currentScheduleID);
 
 		//determine which cues are visible
 		let time = currentTime % totalDur;
 		let visibleCues = [];
-		for(let i in currList.items){
-			let cueItem = currList.items[i];
-			let cue = allCues[cueItem.cue_id];
+		for(let i in schedule.periods){
+			let period = schedule.periods[i];
+			let cue = allCues[period.cue_id];
 			if(
-				cueItem.delay <= time && 
-				cueItem.delay + cue.duration >= time
+				period.delay <= time && 
+				period.delay + cue.duration >= time
 				){
 					visibleCues.push(cue);
 			}
