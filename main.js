@@ -371,7 +371,7 @@
 			additionalOptions.removeAttribute("hidden");
 		}
 		else{
-			additionalOptions.setAttribute("hidden", undefined);
+			additionalOptions.setAttribute("hidden", "");
 		}
 	}
 //---
@@ -415,20 +415,20 @@
 		switch(cue.ramp_type){
 			case "jump":
 				rampParameterDiv.removeAttribute("hidden");
-				wrapHueDiv.setAttribute("hidden", undefined);
+				wrapHueDiv.setAttribute("hidden", "");
 				break;
 			case "linearHSL":
 				rampParameterDiv.removeAttribute("hidden");
 				wrapHueDiv.removeAttribute("hidden");
 				break;
 			default:
-				rampParameterDiv.setAttribute("hidden", undefined);
-				wrapHueDiv.setAttribute("hidden", undefined);		
+				rampParameterDiv.setAttribute("hidden", "");
+				wrapHueDiv.setAttribute("hidden", "");		
 		}
 	}
 
 	function startChannelEditing(){
-		channelEditStartButton.setAttribute("hidden", undefined);
+		channelEditStartButton.setAttribute("hidden", "");
 		ledHitboxDiv.removeAttribute("hidden");
 		channelEditStopButton.removeAttribute("hidden");
 		editChannelsInstructions.removeAttribute("hidden");
@@ -436,9 +436,9 @@
 
 	function stopChannelEditing(){
 		channelEditStartButton.removeAttribute("hidden");
-		ledHitboxDiv.setAttribute("hidden", undefined);
-		channelEditStopButton.setAttribute("hidden", undefined);
-		editChannelsInstructions.setAttribute("hidden", undefined);
+		ledHitboxDiv.setAttribute("hidden", "");
+		channelEditStopButton.setAttribute("hidden", "");
+		editChannelsInstructions.setAttribute("hidden", "");
 	}
 
 	function toggleChannel(ledID){
@@ -470,7 +470,7 @@
 		currentCueID = index;
 		activeCueIndices = [index];
 		let cueItem = cueBrowserItemByCueID(index);
-		cueItem.setAttribute("active",undefined);
+		cueItem.setAttribute("active", "");
 		//TODO: Update all the values displayed in editor
 		transPickerRedrawLine(allCues[currentCueID]);
 		updateCueEditorValues(allCues[currentCueID]);
@@ -524,7 +524,7 @@
 	}
 
 	function closeCueEditor(){
-		cueEditor.setAttribute("hidden", undefined);
+		cueEditor.setAttribute("hidden", "");
 	}
 
 	function downloadJSON(){
@@ -669,7 +669,7 @@
 		let cueList = allCueLists[index];
 
 		let cueListObject = cueListBrowserItemByCueListID(index);
-		cueListObject.setAttribute("active", undefined);
+		cueListObject.setAttribute("active", "");
 
 		for(let cueListItem of cueList.items){
 			createCueListItem(cueListItem.cue_id);
@@ -684,7 +684,7 @@
 	}
 
 	function closeCueListEditor(){
-		cueListEditor.setAttribute("hidden", undefined);
+		cueListEditor.setAttribute("hidden", "");
 	}
 
 	function closeCueList(index){
