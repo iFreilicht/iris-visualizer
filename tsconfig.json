@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true,
+        "strictNullChecks": true
+    },
+    "files":[
+        "main.ts",
+        "color/index.d.ts"
+    ]
+}

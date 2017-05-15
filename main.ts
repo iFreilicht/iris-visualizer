@@ -1,5 +1,9 @@
+/// <amd-depend
+
 //import {Color} from "./Color/Color.js"
 "use strict";
+
+declare var Color:any; 
 
 //constants
 	let pollingInterval = 16;
@@ -15,7 +19,7 @@
 //---
 
 //helpers
-	function defaultValue(value, defaultValue){
+	function defaultValue<T>(value: T, defaultValue: T) : T {
 		if(typeof value !== "undefined"){
 			return value;
 		}
@@ -35,6 +39,7 @@
 				return i;
 			}
 		}
+		return numIDs;
 	}
 
 	function cueBrowserItemByCueID(id){
@@ -128,54 +133,54 @@
 //---
 
 //get document elements
-	let ringDisplay = document.getElementById("ringDisplay");
-	let ledHitboxDiv = document.getElementById("ledHitboxDiv");
-	let ledRingCanvas = document.getElementById("ledRingCanvas");
-	let ledRingCtx = ledRingCanvas.getContext("2d");
+	let ringDisplay = document.getElementById("ringDisplay")!;
+	let ledHitboxDiv = document.getElementById("ledHitboxDiv")!;
+	let ledRingCanvas = document.getElementById("ledRingCanvas") as HTMLCanvasElement;
+	let ledRingCtx = ledRingCanvas.getContext("2d") as CanvasRenderingContext2D;
 
-	let transitionPicker = document.getElementById("transitionPicker");
+	let transitionPicker = document.getElementById("transitionPicker")!;
 
-	let transPickerGradCanvas = document.getElementById("transitionPickerHLGradient");
-	let transPickerGradCtx = transPickerGradCanvas.getContext("2d");
+	let transPickerGradCanvas = document.getElementById("transitionPickerHLGradient") as HTMLCanvasElement;
+	let transPickerGradCtx = transPickerGradCanvas.getContext("2d") as CanvasRenderingContext2D;
 
-	let transPickerLineCanvas = document.getElementById("transitionPickerHLLine");
-	let transPickerLineCtx = transPickerLineCanvas.getContext("2d");
+	let transPickerLineCanvas = document.getElementById("transitionPickerHLLine") as HTMLCanvasElement;
+	let transPickerLineCtx = transPickerLineCanvas.getContext("2d") as CanvasRenderingContext2D;
 
-	let transPickerDotCanvas = document.getElementById("transitionPickerHLDot");
-	let transPickerDotCtx = transPickerDotCanvas.getContext("2d");
+	let transPickerDotCanvas = document.getElementById("transitionPickerHLDot") as HTMLCanvasElement;
+	let transPickerDotCtx = transPickerDotCanvas.getContext("2d") as CanvasRenderingContext2D;
 		
-	let rampParameterDisplay = document.getElementById("rampParameterDisplay");
-	let output = document.getElementById("output");
+	let rampParameterDisplay = document.getElementById("rampParameterDisplay") as HTMLCanvasElement;
+	let output = document.getElementById("output")!;
 
-	let editChannelsInstructions = document.getElementById("editChannelsInstructions");
-	let channelEditStartButton = document.getElementById("channelEditStartButton");
-	let channelEditStopButton = document.getElementById("channelEditStopButton");
+	let editChannelsInstructions = document.getElementById("editChannelsInstructions")!;
+	let channelEditStartButton = document.getElementById("channelEditStartButton")!;
+	let channelEditStopButton = document.getElementById("channelEditStopButton")!;
 
-	let cueBrowser = document.getElementById("cueBrowser");
+	let cueBrowser = document.getElementById("cueBrowser")!;
 
-	let scheduleEditor = document.getElementById("scheduleEditor");
-	let scheduleProgressBar = document.getElementById("scheduleProgressBar");
+	let scheduleEditor = document.getElementById("scheduleEditor")!;
+	let scheduleProgressBar = document.getElementById("scheduleProgressBar")!;
 
-	let scheduleBrowser = document.getElementById("scheduleBrowser");
+	let scheduleBrowser = document.getElementById("scheduleBrowser")!;
 
-	let uploadAnchor = document.getElementById("uploadAnchor");
+	let uploadAnchor = document.getElementById("uploadAnchor") as HTMLInputElement;
 	//store empty file list now as it cannot be constructed later
-	let emptyFileList = uploadAnchor.files;
+	let emptyFileList = uploadAnchor.files!;
 //---
 
 //editor options objects
-	let duration = document.getElementById("duration");
-	let timeDivisor = document.getElementById("timeDivisor");
-	let rampType = document.getElementById("rampType");
-	let rampParameter = document.getElementById("rampParameter");
-	let reverse = document.getElementById("reverse");
-	let wrapHue = document.getElementById("wrapHue");
+	let duration = document.getElementById("duration") as HTMLInputElement;
+	let timeDivisor = document.getElementById("timeDivisor") as HTMLInputElement;
+	let rampType = document.getElementById("rampType") as HTMLSelectElement;
+	let rampParameter = document.getElementById("rampParameter") as HTMLInputElement;
+	let reverse = document.getElementById("reverse") as HTMLInputElement;
+	let wrapHue = document.getElementById("wrapHue") as HTMLInputElement;
 //---
 
 //encapsulating divs
-	let rampParameterDiv = document.getElementById("rampParameterDiv");
-	let wrapHueDiv = document.getElementById("wrapHueDiv");
-	let cueEditor = document.getElementById("cueEditor");
+	let rampParameterDiv = document.getElementById("rampParameterDiv")!;
+	let wrapHueDiv = document.getElementById("wrapHueDiv")!;
+	let cueEditor = document.getElementById("cueEditor")!;
 //---
 
 
@@ -365,7 +370,7 @@
 //---
 
 //Additional Options Collapsible
-	let add = document.getElementById("additionalOptions");
+	let additionalOptions = document.getElementById("additionalOptions")!;
 	function toggleOptions(){
 		if(additionalOptions.hidden){
 			additionalOptions.removeAttribute("hidden");
@@ -442,7 +447,7 @@
 	}
 
 	function toggleChannel(ledID){
-		allCues[currentCueID].channels[ledID] ^= true;
+		allCues[currentCueID].channels[ledID] = !allCues[currentCueID].channels[ledID];
 	}
 //---
 
@@ -469,7 +474,8 @@
 	function updateProgressBarPosition(){
 		let baseline = scheduleEditor.getBoundingClientRect().left;
 		let rightmost = 0;
-		for(let listItem of scheduleEditor.children){
+		for(let i in scheduleEditor.children){
+			let listItem = scheduleEditor.children.item(parseInt(i));
 			let right = listItem.getBoundingClientRect().right - baseline;
 			if(right > rightmost){
 				rightmost = right;
@@ -484,7 +490,7 @@
 //Cue Management
 	let currentCueID = NaN;
 	let allCues = {};
-	let activeCueIndices = [];
+	let activeCueIndices:number[] = [];
 
 	function closeCue(index){
 		//currentCueID is NOT set to NaN here! Keep it this way! 
@@ -506,7 +512,11 @@
 		currentCueID = index;
 		activeCueIndices = [index];
 		let cueItem = cueBrowserItemByCueID(index);
-		cueItem.setAttribute("active", "");
+		if (cueItem instanceof Element){
+			cueItem.setAttribute("active", "");
+		} else {
+			console.warn(`Tried to open cue with index ${index}, but it didn't exist.`)
+		}
 		//TODO: Update all the values displayed in editor
 		transPickerRedrawLine(allCues[currentCueID]);
 		updateCueEditorValues(allCues[currentCueID]);
@@ -521,29 +531,35 @@
 			closeCue(index);
 		}
 		
-		cueBrowser.removeChild(cueBrowserItemByCueID(index));
+		let cueItem = cueBrowserItemByCueID(index);
+		if (cueItem instanceof Element){
+			cueBrowser.removeChild(cueItem);
+		} else {
+			console.warn(`Tried to remove cue with index ${index}, but it didn't exist.`)
+		}
+		
 		deletePeriods(index);
 		delete allCues[index];
 	}
 
 	function createCue(){
 		let id = smallestUnusedID(allCues); 
-		let template = document.getElementById("cueTemplate").cloneNode(true);
+		let template = document.getElementById("cueTemplate")!.cloneNode(true) as Element;
 		template.removeAttribute("hidden");
-		template.setAttribute("cueID", id);
+		template.setAttribute("cueID", "" + id);
 		template.removeAttribute("id");
 		
 		//Modify openCue button from template
-		let openCueButton = template.getElementsByClassName("openCue")[0];
+		let openCueButton = template.getElementsByClassName("openCue")[0] as HTMLInputElement;
 		openCueButton.value = "Cue " + id;
 		openCueButton.addEventListener("click", function(){openCue(id)});
 		
 		//Modify deleteCue button from template
-		let deleteCueButton = template.getElementsByClassName("deleteCue")[0];
+		let deleteCueButton = template.getElementsByClassName("deleteCue")[0] as HTMLInputElement;
 		deleteCueButton.addEventListener("click", function(){deleteCue(id)});
 		
 		//create cue object
-		let cue = new Cue();
+		let cue = new Cue(undefined);
 		allCues[id] = cue;
 		
 		//display fully prepared element
@@ -563,7 +579,7 @@
 
 	function downloadJSON(){
 		let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCues, null, 2));
-		let dlAnchorElem = document.getElementById('downloadAnchor');
+		let dlAnchorElem = document.getElementById('downloadAnchor') as HTMLInputElement;
 		dlAnchorElem.setAttribute("href",     dataStr     );
 		dlAnchorElem.setAttribute("download", "AllCues.json");
 		dlAnchorElem.click();
@@ -589,7 +605,7 @@
 				});
 				
 				//remove all existing cues (store length first because it will change)
-				for (let i = allCues.length; i > 0; i--){
+				for (let i = Object.keys(allCues).length; i > 0; i--){
 					deleteCue(0);
 				}
 				
@@ -650,19 +666,19 @@
 
 	function createPeriod(id){
 		let periodID = smallestUnusedID(allSchedules[currentScheduleID].periods);
-		let template = document.getElementById("periodTemplate").cloneNode(true);
+		let template = document.getElementById("periodTemplate")!.cloneNode(true) as HTMLElement;
 		template.removeAttribute("hidden");
 		template.setAttribute("cueID", id);
-		template.setAttribute("periodID", periodID);
+		template.setAttribute("periodID", "" + periodID);
 		template.removeAttribute("id");
 
 		//Modify openCue button from template
-		let openCueButton = template.getElementsByClassName("openCue")[0];
+		let openCueButton = template.getElementsByClassName("openCue")[0] as HTMLInputElement;
 		openCueButton.value = "Cue " + id;
-		openCueButton.addEventListener("click", function(){openCueItem(template)});
+		openCueButton.addEventListener("click", function(){/*openCueItem(template)*/});
 		
 
-		template.addEventListener("mousedown", function(event){
+		template.addEventListener("mousedown", function(event : MouseEvent){
 			let leftLower = scheduleEditor.getBoundingClientRect().left + event.offsetX;
 			let start = event.pageX;
 			let diff = 0;
@@ -695,13 +711,13 @@
 
 	function createSchedule(){
 		let id = smallestUnusedID(allSchedules); 
-		let template = document.getElementById("scheduleTemplate").cloneNode(true);
+		let template = document.getElementById("scheduleTemplate")!.cloneNode(true) as Element;
 		template.removeAttribute("hidden");
-		template.setAttribute("scheduleID", id);
+		template.setAttribute("scheduleID", "" + id);
 		template.removeAttribute("id");
 		
 		//Modify openCue button from template
-		let openScheduleButton = template.getElementsByClassName("openSchedule")[0];
+		let openScheduleButton = template.getElementsByClassName("openSchedule")[0] as HTMLInputElement;
 		openScheduleButton.value = "Schedule " + id;
 		openScheduleButton.addEventListener("click", function(){openSchedule(id)});
 		
@@ -710,7 +726,7 @@
 		deleteScheduleButton.addEventListener("click", function(){deleteSchedule(id)});
 		
 		//create Schedule object
-		let schedule = new Schedule();
+		let schedule = new Schedule(undefined);
 		allSchedules[id] = schedule;
 		
 		//display fully prepared element
@@ -727,8 +743,12 @@
 		currentScheduleID = index;
 		let schedule = allSchedules[index];
 
-		let scheduleObject = scheduleBrowserItemByScheduleID(index);
-		scheduleObject.setAttribute("active", "");
+		let scheduleElement = scheduleBrowserItemByScheduleID(index);
+		if(scheduleElement instanceof Element){
+			scheduleElement.setAttribute("active", "");
+		} else {
+			console.warn(`Tried to open schedule at index ${index}, but it didn't exist.`);
+		}
 
 		for(let i in schedule.periods){
 			createPeriod(schedule.periods[i].cue_id);
@@ -767,7 +787,14 @@
 			closeSchedule(index);
 		}
 		
-		scheduleBrowser.removeChild(scheduleBrowserItemByScheduleID(index));
+		let scheduleElement = scheduleBrowserItemByScheduleID(index);
+		if(scheduleElement instanceof Element){
+			scheduleBrowser.removeChild(scheduleElement);
+		
+		} else {
+			console.warn(`Tried to delete schedule at index ${index}, but it didn't exist.`);
+		}
+
 		delete allSchedules[index];
 		
 		currentScheduleID = NaN;
@@ -794,10 +821,6 @@
 
 	let ringX = ledRingCanvas.width/2;
 	let ringY = ledRingCanvas.height/2;
-
-	//set up canvas drawing context
-	ledRingCtx.imageSmoothingEnabled = true;
-	ledRingCtx.imageSmoothingQuality = "high";
 
 	//draw complete case to canvas
 	function drawCase(){
@@ -830,16 +853,16 @@
 
 	//Generate and place Hitboxes for clicking LEDs
 	function setupLedHitboxes(){
-		let originalTemplate = document.getElementById("ledHitboxTemplate");
+		let originalTemplate = document.getElementById("ledHitboxTemplate")!;
 		let centerTop = (ledRingCanvas.height - originalTemplate.getBoundingClientRect().height)/2;
 		let centerLeft = (ledRingCanvas.width - originalTemplate.getBoundingClientRect().width)/2;
 
 
 		for(let id = 0; id < numLeds; id++){
 			
-			let template = document.getElementById("ledHitboxTemplate").cloneNode(true);
+			let template = document.getElementById("ledHitboxTemplate")!.cloneNode(true) as HTMLElement;
 			template.removeAttribute("hidden");
-			template.setAttribute("ledID", id);
+			template.setAttribute("ledID", "" + id);
 			template.removeAttribute("id");
 
 			//calculate new position
@@ -867,7 +890,7 @@ function interpolate(cue, progress){
 	let ramp_parameter = cue.ramp_parameter;
 	let wrap_hue = cue.wrap_hue;
 
-	function linear(start, end, wrapHue){
+	function linear(start, end, wrapHue?){
 		if (typeof wrapHue === "undefined") wrapHue = false;
 		//factor is a sawtooth function
 		let factor = progress < ramp_parameter ? 
@@ -1026,7 +1049,7 @@ window.setInterval(function () {
 
 		//determine which cues are visible
 		let time = currentTime % totalDur;
-		let visibleCues = [];
+		let visibleCues: Object[] = [];
 		for(let i in schedule.periods){
 			let period = schedule.periods[i];
 			let cue = allCues[period.cue_id];
@@ -1038,13 +1061,13 @@ window.setInterval(function () {
 			}
 		}
 
-		let finalColors = [];
+		let finalColors: Object[] = [];
 		//calculate colours for each LED
 		for(let i = numLeds - 1; i >= 0; i--){
-			let colors = [];
+			let colors: Object[] = [];
 			for(let cue of visibleCues){
-				if(cue.channels[i]){
-					colors.push(interpolate(cue, timeForLED(cue, time, i)/cue.duration));
+				if(cue["channels"][i]){
+					colors.push(interpolate(cue, timeForLED(cue, time, i)/cue["duration"]));
 				}
 			}
 
