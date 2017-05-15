@@ -95,7 +95,7 @@
 			p = {};
 		}
 		
-		this.items = defaultValue(p.items, []);
+		this.items = defaultValue(p.items, {});
 	}
 //---
 
@@ -119,7 +119,7 @@
 	}
 
 	function updateTime(duration){
-		currentTime = currentTime + pollingInterval;
+		currentTime = (currentTime + pollingInterval) % duration;
 	}
 
 	function timeForLED(cue, time, led){
@@ -155,6 +155,7 @@
 	let cueBrowser = document.getElementById("cueBrowser");
 
 	let cueListEditor = document.getElementById("cueListEditor");
+	let cueListProgressBar = document.getElementById("cueListProgressBar");
 
 	let cuelistBrowser = document.getElementById("cueListBrowser");
 
@@ -446,6 +447,41 @@
 	}
 //---
 
+//Cue List Editor helpers, functions and event handlers
+	function totalDuration(cueListID){
+		let currList = allCueLists[cueListID];
+		let total = 0;
+
+		for(let i in currList.items){
+			let cueItem = currList.items[i];
+			let t = cueItem.delay + allCues[cueItem.cue_id].duration;
+			if(t > total){
+				total = t;
+			}
+		}
+
+		return total;
+	}
+
+	function updateProgressBarHeight(){
+		cueListProgressBar.style.height = cueListEditor.getBoundingClientRect().height + "px";
+	}
+
+	function updateProgressBarPosition(){
+		let baseline = cueListEditor.getBoundingClientRect().left;
+		let rightmost = 0;
+		for(let listItem of cueListEditor.children){
+			let right = listItem.getBoundingClientRect().right - baseline;
+			if(right > rightmost){
+				rightmost = right;
+			}
+		}
+
+		let progress = currentTime / totalDuration(currentCueListID);
+		cueListProgressBar.style.left = baseline + progress * rightmost + "px";
+	}
+//---
+
 //Cue Management
 	let currentCueID = NaN;
 	let allCues = {};
@@ -481,15 +517,13 @@
 		if (numKeys(allCues) <= 0){
 			return;
 		}
-		if (currentCueID == index){
+		if (currentCueID === index){
 			closeCue(index);
 		}
 		
 		cueBrowser.removeChild(cueBrowserItemByCueID(index));
 		deleteCueListItems(index);
 		delete allCues[index];
-		
-		currentCueID = NaN;
 	}
 
 	function createCue(){
@@ -589,9 +623,11 @@
 			item = cueListItemByCueID(index);
 		}
 
-		for(let i in allCueLists[currentCueListID].items){
-			if(allCueLists[currentCueListID].items[i].cue_id === index){
-				allCueLists[currentCueListID].items.splice(i, 1);
+		for(let i in allCueLists){
+			for(let j in allCueLists[i].items){
+				if(allCueLists[i].items[j].cue_id === index){
+					delete allCueLists[i].items[j];
+				}
 			}
 		}
 	}
@@ -614,24 +650,48 @@
 	}
 
 	function createCueListItem(id){
+		let cueListItemID = smallestUnusedID(allCueLists[currentCueListID].items);
 		let template = document.getElementById("cueListItemTemplate").cloneNode(true);
 		template.removeAttribute("hidden");
 		template.setAttribute("cueID", id);
+		template.setAttribute("cueListItemID", cueListItemID);
 		template.removeAttribute("id");
 
 		//Modify openCue button from template
 		let openCueButton = template.getElementsByClassName("openCue")[0];
 		openCueButton.value = "Cue " + id;
 		openCueButton.addEventListener("click", function(){openCueItem(template)});
+		
+
+		template.addEventListener("mousedown", function(event){
+			let leftLower = cueListEditor.getBoundingClientRect().left + event.offsetX;
+			let start = event.pageX;
+			let diff = 0;
+			
+			let mousemove = function(event){
+				diff = event.pageX - leftLower;
+				if (diff >= 0 && diff < 240){
+					template.style.left = diff + "px";
+				}
+			}
+
+			document.body.addEventListener("mousemove", mousemove);
+
+			//remove event listener after dragging has been completed
+			document.body.addEventListener("mouseup", function(){
+				document.body.removeEventListener("mousemove", mousemove)
+			});
+		});
 	
 		//display fully prepared element
 		cueListEditor.appendChild(template);
+		updateProgressBarHeight();
 	}
 
 	function addCueListItem(id){
 		createCueListItem(id);
-
-		allCueLists[currentCueListID].items.push(new CueListItem({cue_id: id}));
+		let itemID = smallestUnusedID(allCueLists[currentCueListID].items);
+		allCueLists[currentCueListID].items[itemID] = new CueListItem({cue_id: id});
 	}
 
 	function createCueList(){
@@ -671,8 +731,8 @@
 		let cueListObject = cueListBrowserItemByCueListID(index);
 		cueListObject.setAttribute("active", "");
 
-		for(let cueListItem of cueList.items){
-			createCueListItem(cueListItem.cue_id);
+		for(let i in cueList.items){
+			createCueListItem(cueList.items[i].cue_id);
 		}
 
 		resetTime();
@@ -681,10 +741,12 @@
 	function openCueListEditor(){
 		closeCueEditor();
 		cueListEditor.removeAttribute("hidden");
+		cueListProgressBar.removeAttribute("hidden");
 	}
 
 	function closeCueListEditor(){
 		cueListEditor.setAttribute("hidden", "");
+		cueListProgressBar.setAttribute("hidden", "");
 	}
 
 	function closeCueList(index){
@@ -924,6 +986,7 @@ function drawCue(id){
 		
 		//redraw dot for colour of topmost LED
 		transPickerRedrawDot(currentColor);
+		updateTime(allCues[currentCueID].duration);
 	}
 	else {
 		//draw black onto the display if there's no cue to read from
@@ -947,10 +1010,10 @@ function drawCue(id){
 	allCues[8].channels = [false, false, false, false, false, false, true, true, true, true, true, true];
 
 	createCueList();
-	allCueLists[0].items = [
-		new CueListItem({cue_id: 8}),
-		new CueListItem({cue_id: 7})
-	];
+	allCueLists[0].items = {
+		0: new CueListItem({cue_id: 8}),
+		1: new CueListItem({cue_id: 7})
+	};
 	
 	openCueList(0);
 //---
@@ -960,19 +1023,13 @@ window.setInterval(function () {
 		let currList = allCueLists[currentCueListID];
 
 		//determine total duration of cue list
-		let totalDuration = 0;
-		for(let cueItem of currList.items){
-			let cue = allCues[cueItem.cue_id];
-			let total = cueItem.delay + cue.duration;
-			if(total > totalDuration){
-				totalDuration = total;
-			}
-		}
+		let totalDur = totalDuration(currentCueListID);
 
 		//determine which cues are visible
-		let time = currentTime % totalDuration;
+		let time = currentTime % totalDur;
 		let visibleCues = [];
-		for(let cueItem of currList.items){
+		for(let i in currList.items){
+			let cueItem = currList.items[i];
 			let cue = allCues[cueItem.cue_id];
 			if(
 				cueItem.delay <= time && 
@@ -1001,11 +1058,11 @@ window.setInterval(function () {
 		}
 
 		transPickerRedrawDot(finalColors[0]);
-		updateTime(totalDuration);
+		updateTime(totalDur);
+		updateProgressBarPosition();
 	}
 	else{
 		drawCue(currentCueID)
-		updateTime(allCues[currentCueID].duration);
 	}
 	
 }, pollingInterval);

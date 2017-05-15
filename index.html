@@ -82,17 +82,22 @@
 						</div>
 					</div>
 				</div><br>
-				<div>
-					<li id="cueListItemTemplate" class="cueListItem listItem" cueID="Infinity" hidden draggable="true" ondragstart="dragCueListItem(this, event)">
+				<div id="cueListEditorDiv">
+					<div>
+						<label for="cueListEditorTimescale">Total Time on scale:</label>
+						<input id="cueListEditorTimescale" type="number"/>
+					</div>
+					<li id="cueListItemTemplate" class="cueListItem listItem" cueID="Infinity" hidden draggable="false" ondragstart="dragCueListItem(this, event)">
 						<input type="button" value="CueTmp" class="openCue"/>
-						<div class="linkButtonDiv">
-							<input type="button" value="🔗" class="linkButton"/>
-						</div>
-						<input type="button" value="9999" class="cueListItemDelay"/>
+						<input type="button" value="•••" class="cueListItemOptions"/>
 					</li>
-					<ul id="cueListEditor"  ondrop="dropCueIntoList(event)" ondragover="event.preventDefault()">
-						<!--This is populated dynamically-->
-					</ul>
+					<div>
+						<div id="cueListProgressBar">
+						</div>
+						<ul id="cueListEditor"  ondrop="dropCueIntoList(event)" ondragover="event.preventDefault()">
+							<!--This is populated dynamically-->
+						</ul>
+					</div>
 				</div>
 			</div>
 			<div id="cueBrowserDiv">
