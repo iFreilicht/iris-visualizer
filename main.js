@@ -767,6 +767,7 @@
 		ledRingCtx.stroke();
 	};
 
+	//Generate and place Hitboxes for clicking LEDs
 	function setupLedHitboxes(){
 		let originalTemplate = document.getElementById("ledHitboxTemplate");
 		let centerTop = (ledRingCanvas.height - originalTemplate.getBoundingClientRect().height)/2;
@@ -790,8 +791,6 @@
 			template.style.left = left + "px";
 			template.style.transform = "rotate(" + angleDeg + "deg)";
 
-			template.addEventListener("mouseover", function(){hoverChannel(id)});
-			template.addEventListener("mouseout", function(){hoverChannel(NaN)});
 			template.addEventListener("click", function(){toggleChannel(id)});
 
 			ledHitboxDiv.appendChild(template);
