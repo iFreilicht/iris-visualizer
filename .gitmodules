@@ -4,3 +4,9 @@
 [submodule "sortable"]
 	path = sortable
 	url = https://github.com/RubaXa/Sortable
+[submodule "color-js"]
+	path = color-js
+	url = https://github.com/brehaut/color-js
+[submodule "scripts/color-js"]
+	path = scripts/color-js
+	url = https://github.com/brehaut/color-js

@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "module": "commonjs",
         "sourceMap": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "outFile": "main.js"
     },
     "files":[
-        "main.ts",
-        "color/index.d.ts"
+        "scripts/main.ts"
     ]
 }

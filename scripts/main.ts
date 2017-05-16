@@ -1,9 +1,8 @@
-/// <amd-depend
+/// <reference path="./helpers/defaultValue.ts"/>
+/// <reference path="./cue.ts"/>
 
-//import {Color} from "./Color/Color.js"
-"use strict";
 
-declare var Color:any; 
+//"use strict";
 
 //constants
 	let pollingInterval = 16;
@@ -12,27 +11,19 @@ declare var Color:any;
 	let ledsWidthRad 	= 0.156;
 	let ledLastStartRad = 1.5 - ledsWidthRad/2;
 	let ledLastEndRad 	= 1.5 + ledsWidthRad/2;
-	let caseColorOuter	= new Color('hsl(0,0%,15%)');
-	let caseColorEdge	= new Color('hsl(0,0%,10%)');
-	let caseColorInner	= new Color('hsl(0,0%,5%)');
-	let buttonColor		= new Color('hsl(0,0%,10%)');
+	let caseColorOuter	= Color('hsl(0,0%,15%)');
+	let caseColorEdge	= Color('hsl(0,0%,10%)');
+	let caseColorInner	= Color('hsl(0,0%,5%)');
+	let buttonColor		= Color('hsl(0,0%,10%)');
 //---
 
 //helpers
-	function defaultValue<T>(value: T, defaultValue: T) : T {
-		if(typeof value !== "undefined"){
-			return value;
-		}
-		else{
-			return defaultValue;
-		}
-	}
 
-	function numKeys(object){
+	function numKeys(object: Object) : number {
 		return Object.keys(object).length;
 	}
 
-	function smallestUnusedID(object){
+	function smallestUnusedID(object: Object) : number{
 		let numIDs = numKeys(object);
 		for(let i = 0; i <= numIDs; i++){
 			if(typeof object[i] === "undefined"){
@@ -42,77 +33,16 @@ declare var Color:any;
 		return numIDs;
 	}
 
-	function cueBrowserItemByCueID(id){
+	function cueBrowserItemByCueID(id: number){
 		return document.querySelector('.cueItem[cueID="' + id + '"]');
 	}
 
-	function scheduleBrowserItemByScheduleID(id){
+	function scheduleBrowserItemByScheduleID(id: number){
 		return document.querySelector('.schedule[scheduleID="' + id + '"]');
 	}
 
-	function periodByCueID(id){
+	function periodByCueID(id: number){
 		return document.querySelector('.period[cueID="' + id + '"]');
-	}
-//---
-
-//Cue Type
-	//define Cue constructor
-	//p is an optional parameter object
-	function Cue(p){
-		if (typeof p == "undefined"){
-			p = {};
-		}
-		this.channels 		= defaultValue(p.channels, Array(numLeds).fill(true,0,numLeds));
-		this.reverse 		= defaultValue(p.reverse, 			false					);
-		this.wrap_hue 		= defaultValue(p.wrap_hue, 			false					);
-		this.time_divisor 	= defaultValue(p.time_divisor,		numLeds					);
-		this.delay 			= defaultValue(p.delay,				0						);
-		this.duration 		= defaultValue(p.duration,			3000					);
-		this.ramp_type 		= defaultValue(p.ramp_type,			'linearHSL'				);
-		this.ramp_parameter = defaultValue(p.ramp_parameter,	1						);
-		this.start_color 	= new Color(defaultValue(p.start_color,		'#FF0000')	);
-		this.end_color 		= new Color(defaultValue(p.end_color, 		'#FF0001')	);
-		this.offset_color 	= new Color(defaultValue(p.offset_color,	'black')	);
-	};
-
-	Cue.prototype.toJSON = function(){
-		//leave out all unused fields for now
-		return {
-			channels: this.channels,
-			reverse: this.reverse,
-			wrap_hue: this.wrap_hue,
-			time_divisor: this.time_divisor,
-			//delay: this.delay,
-			duration: this.duration,
-			ramp_type: this.ramp_type,
-			ramp_parameter: this.ramp_parameter,
-			start_color: this.start_color.getHSL(),
-			end_color: this.end_color.getHSL(),
-			//offset_color: this.offset_color.getHSL()
-		};
-	}
-//---
-
-//Schedule Type
-	//p is an optional parameter object
-	function Schedule(p){
-		if (typeof p == "undefined"){
-			p = {};
-		}
-		
-		this.periods = defaultValue(p.periods, {});
-	}
-//---
-
-//Period Type
-	//p is an optional parameter object
-	function Period(p){
-		if (typeof p == "undefined"){
-			p = {};
-		}
-
-		this.cue_id = defaultValue(p.cue_id, NaN);
-		this.delay = defaultValue(p.delay, 0);
 	}
 //---
 
@@ -122,11 +52,11 @@ declare var Color:any;
 		currentTime = 0;
 	}
 
-	function updateTime(duration){
+	function updateTime(duration: number){
 		currentTime = (currentTime + pollingInterval) % duration;
 	}
 
-	function timeForLED(cue, time, led){
+	function timeForLED(cue: Cue, time: number, led: number){
 		let id = cue.reverse ? led : (numLeds - led);
 		return (time + ((cue.duration/cue.time_divisor) * id)) % cue.duration;
 	}
@@ -192,29 +122,28 @@ declare var Color:any;
 //---
 
 //Transition Picker helpers
-	function colorToHLCoords(color){
-		let h = (color.hue()/360) * transPickerGradCanvas.width;
-		let l = (color.lightness()/100) * transPickerGradCanvas.height;
+	function colorToHLCoords(color: Color){
+		let h = (color.getHue()/360) * transPickerGradCanvas.width;
+		let l = (color.getLightness()) * transPickerGradCanvas.height;
 		return [h, l];
 	}
 
-	function HLCoordsToColor(h, l){
+	function HLCoordsToColor(h: number, l: number){
 		//convert HL coordinates
 		h = (h/transPickerGradCanvas.width) * 360;
-		l = (l/transPickerGradCanvas.height) * 100;
+		l = (l/transPickerGradCanvas.height);
 		//clamp coordinates. They might be slightly over or under limits.
 		h = Math.min(Math.max(h, 0), 360);
-		l = Math.min(Math.max(l, 0), 100);
-		let color = new Color();
-		color.saturation(100);
-		color.hue(h);
-		color.lightness(l);
-		return color;
+		l = Math.min(Math.max(l, 0), 1);
+		return Color()
+		.setSaturation(100)
+		.setHue(h)
+		.setLightness(l);
 	}
 //---
 
 //Transition Picker drawing functions
-	function transPickerRedrawLine(cue){
+	function transPickerRedrawLine(cue: Cue){
 		let ctx = transPickerLineCtx;
 		//clear canvas
 		transPickerClearLine();
@@ -222,8 +151,8 @@ declare var Color:any;
 		let [start_h, start_l] = colorToHLCoords(cue.start_color);
 		let [end_h, end_l] = colorToHLCoords(cue.end_color);
 		//calculate gradient colors with relative negative lightness
-		let l_grad_start = 100 - cue.start_color.lightness();
-		let l_grad_end = 100 - cue.end_color.lightness();
+		let l_grad_start = (1 - cue.start_color.getLightness()) * 100;
+		let l_grad_end = (1 - cue.end_color.getLightness()) * 100;
 		let color_grad_start = 'hsl(0,0%,' + l_grad_start + '%)';
 		let color_grad_end = 'hsl(0,0%,' + l_grad_end + '%)';
 
@@ -267,16 +196,16 @@ declare var Color:any;
 		ctx.clearRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
 	}
 
-	function transPickerRedrawDot(color){
-		color = defaultValue(color, new Color('black'));
+	function transPickerRedrawDot(color: Color){
+		color = defaultValue(color, Color('black'));
 		let ctx = transPickerDotCtx;
 		let radius = 6;
 		ctx.clearRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
 		ctx.beginPath();
 		ctx.arc.apply(ctx, colorToHLCoords(color).concat([radius, 0, 2 * Math.PI]));
-		ctx.fillStyle = color;
+		ctx.fillStyle = color.toString();
 		ctx.fill();
-		ctx.strokeStyle = 'hsl(0,0%,' + (100 - color.lightness()) + '%)';
+		ctx.strokeStyle = 'hsl(0,0%,' + (1 - color.getLightness()) * 100 + '%)';
 		ctx.lineWidth = 2;
 		ctx.stroke();
 	}
@@ -305,7 +234,7 @@ declare var Color:any;
 		transPickerGradCtx.fillRect(0, 0, transPickerGradCanvas.width, transPickerGradCanvas.height);
 	}
 		
-	function relocateColorPoint(mouseH, mouseL){
+	function relocateColorPoint(mouseH: number, mouseL: number){
 		let newColor = HLCoordsToColor(mouseH, mouseL);
 		if(closestIsStart){
 			allCues[closestIndex].start_color = newColor;
@@ -317,14 +246,14 @@ declare var Color:any;
 //---
 	
 //Transition Picker event handlers
-	function handleTransitionPickerMouseMove(e){
+	function handleTransitionPickerMouseMove(e: MouseEvent){
 		let rect = transitionPicker.getBoundingClientRect();
 		let mouseH = e.clientX - rect.left;
 		let mouseL = e.clientY - rect.top;
 		relocateColorPoint(mouseH, mouseL);
 	}
 
-	function handleTransitionPickerMouseDown(e){
+	function handleTransitionPickerMouseDown(e: MouseEvent){
 		//prevent bubbling
 		e.preventDefault();
 		//make cursor invisible
@@ -360,7 +289,7 @@ declare var Color:any;
 	}
 	transitionPicker.addEventListener("mousedown", handleTransitionPickerMouseDown);
 
-	function handleTransitionPickerMouseUp(e){
+	function handleTransitionPickerMouseUp(e: MouseEvent){
 		//make cursor visible again
 		transitionPicker.style.cursor = "crosshair";
 		//add event handlers
@@ -382,47 +311,53 @@ declare var Color:any;
 //---
 
 //Event Handlers for options:
-	function updateRampParameter(value){
-		allCues[currentCueID].ramp_parameter = value;
+	function updateRampParameter(value: string){
+		allCues[currentCueID].ramp_parameter = parseInt(value);
 		rampParameterDisplay.innerHTML = value;
 	}
-	function updateRampType(value){
-		allCues[currentCueID].ramp_type = value;
-		updateOptionVisibility(allCues[currentCueID]);
+	function updateRampType(value: string){
+		if(RampType[value] != undefined){
+				allCues[currentCueID].ramp_type = RampType[value];
+				updateOptionVisibility(allCues[currentCueID]);
+		} else {
+				console.warn(`Tried to update ramp_type to invalid value "${value}".`);
+		}
+		
+		
 	}
-	function updateDuration(value){
+	function updateDuration(value: string){
 		allCues[currentCueID].duration = parseInt(value);
 	}
-	function updateTimeDivisor(value){
+	function updateTimeDivisor(value: string){
 		allCues[currentCueID].time_divisor = parseInt(value);
 	}
-	function updateReverse(checked){
+	function updateReverse(checked: boolean){
 		allCues[currentCueID].reverse = checked;
 	}
-	function updateWrapHue(checked){
+	function updateWrapHue(checked: boolean){
 		allCues[currentCueID].wrap_hue = checked;
 		transPickerRedrawLine(allCues[currentCueID]);
 	}
 
-	function updateCueEditorValues(cue){
+	function updateCueEditorValues(cue: Cue){
 		updateOptionVisibility(cue);
 
-		duration.value = cue.duration;
-		timeDivisor.value = cue.time_divisor;
-		rampType.value = cue.ramp_type;
-		rampParameter.value = cue.ramp_parameter;
-		updateRampParameter(cue.ramp_parameter);
+		duration.value = cue.duration.toString();
+		timeDivisor.value = cue.time_divisor.toString();
+		rampType.value = RampType[cue.ramp_type];
+		rampParameter.value = cue.ramp_parameter.toString();
+		updateRampParameter(cue.ramp_parameter.toString());
 		reverse.checked = cue.reverse;
 		wrapHue.checked = cue.wrap_hue;
 	}
 
-	function updateOptionVisibility(cue){
+	function updateOptionVisibility(cue: Cue){
 		switch(cue.ramp_type){
-			case "jump":
+			case RampType.jump:
 				rampParameterDiv.removeAttribute("hidden");
 				wrapHueDiv.setAttribute("hidden", "");
 				break;
-			case "linearHSL":
+			case RampType.linearHSL:
 				rampParameterDiv.removeAttribute("hidden");
 				wrapHueDiv.removeAttribute("hidden");
 				break;
@@ -446,13 +381,13 @@ declare var Color:any;
 		editChannelsInstructions.setAttribute("hidden", "");
 	}
 
-	function toggleChannel(ledID){
+	function toggleChannel(ledID: number){
 		allCues[currentCueID].channels[ledID] = !allCues[currentCueID].channels[ledID];
 	}
 //---
 
 //Schedule Editor helpers, functions and event handlers
-	function totalDuration(scheduleID){
+	function totalDuration(scheduleID: number){
 		let schedule = allSchedules[scheduleID];
 		let total = 0;
 
@@ -489,10 +424,10 @@ declare var Color:any;
 
 //Cue Management
 	let currentCueID = NaN;
-	let allCues = {};
+	let allCues: Cue[] = [];
 	let activeCueIndices:number[] = [];
 
-	function closeCue(index){
+	function closeCue(index: number){
 		//currentCueID is NOT set to NaN here! Keep it this way! 
 		//Better render a few false frames than let the display die
 		let elem = cueBrowserItemByCueID(index);
@@ -504,7 +439,7 @@ declare var Color:any;
 		}
 	}
 
-	function openCue(index){
+	function openCue(index: number){
 		closeCue(currentCueID);
 		closeSchedule(currentScheduleID);
 		openCueEditor();
@@ -523,7 +458,7 @@ declare var Color:any;
 		resetTime();
 	}
 
-	function deleteCue(index){
+	function deleteCue(index: number){
 		if (numKeys(allCues) <= 0){
 			return;
 		}
@@ -559,7 +494,7 @@ declare var Color:any;
 		deleteCueButton.addEventListener("click", function(){deleteCue(id)});
 		
 		//create cue object
-		let cue = new Cue(undefined);
+		let cue = new Cue();
 		allCues[id] = cue;
 		
 		//display fully prepared element
@@ -585,21 +520,21 @@ declare var Color:any;
 		dlAnchorElem.click();
 	}
 
-	function uploadJSON(files){
+	function uploadJSON(files: FileList){
 		if (files.length <= 0){
 			return;
 		}
 		let file = files[0];
 		let reader = new FileReader();
 		
-		reader.onload = function(e){
-			let data = reader.result;
+		reader.onload = function(e: Event){
+			let data: string = reader.result;
 			try {
 				let loadedCues = JSON.parse(data, 
-				function(key, value){
+				function(key: string, value: Object){
 					//this check is enough because the Cue constructor is very permissive
-					if(typeof value.start_color != 'undefined'){
-						return new Cue(value);
+					if(value.hasOwnProperty('start_color')){
+						return new Cue(value as CueSerialized);
 					}
 					return value;
 				});
@@ -630,7 +565,7 @@ declare var Color:any;
 
 //Schedule management
 	let currentScheduleID = NaN;
-	let allSchedules = {};
+	let allSchedules: Schedule[] = [];
 
 	function deletePeriods(index){
 		let period; 
@@ -706,7 +641,7 @@ declare var Color:any;
 	function addPeriod(id){
 		createPeriod(id);
 		let itemID = smallestUnusedID(allSchedules[currentScheduleID].periods);
-		allSchedules[currentScheduleID].periods[itemID] = new Period({cue_id: id});
+		allSchedules[currentScheduleID].periods[itemID] = new Period(id);
 	}
 
 	function createSchedule(){
@@ -838,11 +773,11 @@ declare var Color:any;
 	}
 	
 	//Draw colour to one LED
-	function drawLed(index, color){
-		color = defaultValue(color, new Color('black'));
+	function drawLed(index: number, color: Color){
+		color = defaultValue(color, Color('black'));
 		index = index % numLeds;
 		ledRingCtx.lineWidth = ringWidth * canvasScale;
-		ledRingCtx.strokeStyle = color;
+		ledRingCtx.strokeStyle = color.toCSS();
 		ledRingCtx.beginPath();
 		ledRingCtx.arc(ringX, ringY, ringR * canvasScale, 
 			(ledLastStartRad + ledsStepRad * index) * Math.PI, 
@@ -883,15 +818,15 @@ declare var Color:any;
 //---
 
 //interpolate between start and end colour of a cue
-function interpolate(cue, progress){
+function interpolate(cue: Cue, progress: number) : Color{
 	let start_color = cue.start_color;
 	let end_color = cue.end_color;
 	let ramp_type = cue.ramp_type;
 	let ramp_parameter = cue.ramp_parameter;
 	let wrap_hue = cue.wrap_hue;
 
-	function linear(start, end, wrapHue?){
-		if (typeof wrapHue === "undefined") wrapHue = false;
+	function linear(start: number, end: number, wrapHue?: boolean){
+		if (wrapHue == undefined) wrapHue = false;
 		//factor is a sawtooth function
 		let factor = progress < ramp_parameter ? 
 			progress / ramp_parameter :
@@ -909,23 +844,24 @@ function interpolate(cue, progress){
 		}
 	}
 
+	let result = Color();
 	switch(ramp_type){
-		case "jump":
-			if (progress + 0.02 > ramp_parameter){
-				return new Color(end_color);
+		case RampType.jump:
+			if (progress > ramp_parameter){
+				return end_color;
 			} else {
-				return new Color(start_color);
+				return start_color;
 			}
-		case "linearHSL":
-			let result = new Color();
-			result.hue(			linear(start_color.hue(), 			end_color.hue(), wrap_hue));
-			result.saturation(	linear(start_color.saturation(), 	end_color.saturation()));
-			result.lightness(	linear(start_color.lightness(), 	end_color.lightness()));
-			return result;
-		case "linearRGB":
-			let resultColor = new Color(start_color);
-			resultColor.interpolate(end_color, progress);
-			return resultColor;
+		case RampType.linearHSL:
+			return result
+			.setHue(		linear(start_color.getHue(), 		end_color.getHue(), wrap_hue))
+			.setSaturation(	linear(start_color.getSaturation(), end_color.getSaturation()))
+			.setLightness(	linear(start_color.getLightness(), 	end_color.getLightness()));
+		case RampType.linearRGB:
+			return result
+			.setRed(		linear(start_color.getRed(), 	end_color.getRed()))
+			.setGreen(		linear(start_color.getGreen(), 	end_color.getGreen()))
+			.setBlue(		linear(start_color.getBlue(), 	end_color.getBlue()));
 	}
 }
 
@@ -940,40 +876,40 @@ drawCase();
 	allCues[1].duration = 3800;
 	allCues[1].ramp_parameter = 0.38;
 	allCues[1].time_divisor = 1;
-	allCues[1].start_color = new Color('hsl(8, 100%, 5%)');
-	allCues[1].end_color = new Color('hsl(84, 100%, 62%)');
+	allCues[1].start_color = Color('hsl(8, 100%, 5%)');
+	allCues[1].end_color = Color('hsl(84, 100%, 62%)');
 
 	createCue();
 	allCues[2].duration = 900;
-	allCues[2].ramp_type = "jump";
+	allCues[2].ramp_type = RampType.jump;
 	allCues[2].ramp_parameter = 0.52;
-	allCues[2].start_color = new Color('#FAFF03');
-	allCues[2].end_color = new Color('#FF00E6');
+	allCues[2].start_color = Color('#FAFF03');
+	allCues[2].end_color = Color('#FF00E6');
 	allCues[2].reverse = true;
 
 	createCue();
 	allCues[3].duration = 60000;
-	allCues[3].ramp_type = "jump";
+	allCues[3].ramp_type = RampType.jump;
 	allCues[3].ramp_parameter = 0.1;
-	allCues[3].start_color = new Color('white');
-	allCues[3].end_color = new Color('black');
+	allCues[3].start_color = Color('white');
+	allCues[3].end_color = Color('black');
 
 	createCue();
 	allCues[4].duration = 3500;
-	allCues[4].start_color = new Color('hsl(121, 100%, 95%)');
-	allCues[4].end_color = new Color('hsl(307, 100%, 15%)');
+	allCues[4].start_color = Color('hsl(121, 100%, 95%)');
+	allCues[4].end_color = Color('hsl(307, 100%, 15%)');
 
 	createCue();
 	allCues[5].duration = 700;
 	allCues[5].time_divisor = 6;
 	allCues[5].ramp_parameter = 0.5;
-	allCues[5].start_color = new Color('hsl(272, 100%, 6%)');
-	allCues[5].end_color = new Color('hsl(184, 100%, 51%)');
+	allCues[5].start_color = Color('hsl(272, 100%, 6%)');
+	allCues[5].end_color = Color('hsl(184, 100%, 51%)');
 
 	createCue();
 	allCues[6].wrap_hue = true;
-	allCues[6].start_color = new Color('hsl(310, 100%, 50%)');
-	allCues[6].end_color = new Color('hsl(103, 100%, 95%)');
+	allCues[6].start_color = Color('hsl(310, 100%, 50%)');
+	allCues[6].end_color = Color('hsl(103, 100%, 95%)');
 
 	// first time setup
 	openCue(6);
@@ -983,36 +919,36 @@ drawCase();
 //draw test ring
 for(let i = 1; i <= numLeds; i++){
 	if(i === numLeds){
-		drawLed(i, new Color('green'));
+		drawLed(i, Color('green'));
 	} else {
-		drawLed(i, new Color('grey'));
+		drawLed(i, Color('grey'));
 	}
 }
 
 
 function drawCue(id){
 	if(id >= 0){
-		let currentColor;
+		let currentColor = Color('black');; 
 		let cue = allCues[id];
 		let duration = cue.duration;
 
 		for(let i = numLeds - 1; i >= 0; i--){
 			if(cue.channels[i]){
 				currentColor = interpolate(cue, timeForLED(cue, currentTime, i)/duration);
-				drawLed(i, currentColor);
+				
+			} else {
+				currentColor = Color('black');
 			}
-			else{
-				drawLed(i, new Color('black'));
-			}
+			drawLed(i, currentColor);
 		}
-		
+
 		//redraw dot for colour of topmost LED
 		transPickerRedrawDot(currentColor);
 		updateTime(allCues[currentCueID].duration);
 	}
 	else {
 		//draw black onto the display if there's no cue to read from
-		let currentColors = Array(numLeds).fill(new Color('black'), 0, numLeds);
+		let currentColors = Array(numLeds).fill(Color('black'), 0, numLeds);
 		for(let i = 0; i < numLeds; i++){
 			drawLed(i, currentColors[i]);
 		}
@@ -1032,14 +968,11 @@ function drawCue(id){
 	allCues[8].channels = [false, false, false, false, false, false, true, true, true, true, true, true];
 
 	createSchedule();
-	allSchedules[0].periods = {
-		0: new Period({cue_id: 8}),
-		1: new Period({cue_id: 7})
-	};
+	allSchedules[0].periods = [new Period(8), new Period(7)];
 	
 	openSchedule(0);
 //---
-
+let logged = false;
 window.setInterval(function () {
 	if(currentScheduleID >= 0){
 		let schedule = allSchedules[currentScheduleID];
@@ -1049,7 +982,7 @@ window.setInterval(function () {
 
 		//determine which cues are visible
 		let time = currentTime % totalDur;
-		let visibleCues: Object[] = [];
+		let visibleCues: Cue[] = [];
 		for(let i in schedule.periods){
 			let period = schedule.periods[i];
 			let cue = allCues[period.cue_id];
@@ -1061,13 +994,13 @@ window.setInterval(function () {
 			}
 		}
 
-		let finalColors: Object[] = [];
+		let finalColors: Color[] = [];
 		//calculate colours for each LED
 		for(let i = numLeds - 1; i >= 0; i--){
-			let colors: Object[] = [];
+			let colors: Color[] = [];
 			for(let cue of visibleCues){
-				if(cue["channels"][i]){
-					colors.push(interpolate(cue, timeForLED(cue, time, i)/cue["duration"]));
+				if(cue.channels[i]){
+					colors.push(interpolate(cue, timeForLED(cue, time, i)/cue.duration));
 				}
 			}
 
@@ -1075,8 +1008,14 @@ window.setInterval(function () {
 			finalColors[i] = colors[0];
 		}
 
+		if(logged){
+			console.log(finalColors);
+			logged = true;
+		}
+		
+
 		for(let i in finalColors){
-			drawLed(i, finalColors[i]);
+			drawLed(parseInt(i), finalColors[i]);
 		}
 
 		transPickerRedrawDot(finalColors[0]);
@@ -1084,7 +1023,7 @@ window.setInterval(function () {
 		updateProgressBarPosition();
 	}
 	else{
-		drawCue(currentCueID)
+		drawCue(currentCueID);
 	}
 	
 }, pollingInterval);
