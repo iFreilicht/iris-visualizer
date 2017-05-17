@@ -1,4 +1,5 @@
 /// <reference path="./helpers/defaultValue.ts"/>
+/// <reference path="./cues.ts"/>
 
 class Schedule{
     periods: Period[];
@@ -7,6 +8,20 @@ class Schedule{
         p = defaultValue(p, {});
 		
 		this.periods = defaultValue(p.periods, []);
+    }
+
+    totalDuration(){
+		let total = 0;
+
+		for(let i in this.periods){
+			let period = this.periods[i];
+			let t = period.delay + cues.get(period.cue_id).duration;
+			if(t > total){
+				total = t;
+			}
+		}
+
+		return total;
     }
 }
 

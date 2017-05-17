@@ -78,6 +78,75 @@ namespace ringDisplay{
         ctx.stroke();
     };
 
+    export function drawColor(color: Color){
+        //draw black onto the display if there's no cue to read from
+        let currentColors = Array(numLeds).fill(color, 0, numLeds);
+        for(let i = 0; i < numLeds; i++){
+            drawLed(i, currentColors[i]);
+        }
+        redrawDot(currentColors[0]);
+    }
+
+    export function drawCue(cue: Cue){
+        let currentColor = new Color('black');
+        let duration = cue.duration;
+
+        for(let i = numLeds - 1; i >= 0; i--){
+            if(cue.channels[i]){
+                currentColor = cue.interpolate(times.forLED(cue, i)/duration);
+                
+            } else {
+                currentColor = new Color('black');
+            }
+            drawLed(i, currentColor);
+        }
+
+        //redraw dot for colour of topmost LED
+        redrawDot(currentColor);
+        times.step(cues.current().duration);
+    }
+
+    export function drawSchedule(schedule: Schedule){
+		//determine total duration of schedule
+		let totalDur = schedules.current().totalDuration();
+
+		//determine which cues are visible
+		let time = times.current() % totalDur;
+		let visibleCues: Cue[] = [];
+		for(let i in schedule.periods){
+			let period = schedule.periods[i];
+			let cue = cues.get(period.cue_id);
+			if(
+				period.delay <= time && 
+				period.delay + cue.duration >= time
+				){
+					visibleCues.push(cue);
+			}
+		}
+
+		let finalColors: Color[] = [];
+		//calculate colours for each LED
+		for(let i = numLeds - 1; i >= 0; i--){
+			let colors: Color[] = [];
+			for(let cue of visibleCues){
+				if(cue.channels[i]){
+					colors.push(cue.interpolate(times.forLED(cue, i, time)/cue.duration));
+				}
+			}
+
+			//TODO: Actually mix colors!
+			finalColors[i] = colors[0];
+		}	
+
+		for(let i in finalColors){
+			drawLed(parseInt(i), finalColors[i]);
+		}
+
+		redrawDot(finalColors[0]);
+		times.step(totalDur);
+		schedules.editor.updateProgressBarPosition();
+    }
+
     export function startChannelEditing(){
 		hitboxes.removeAttribute("hidden");
 	}

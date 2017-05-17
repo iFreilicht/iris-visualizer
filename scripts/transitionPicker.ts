@@ -154,11 +154,11 @@ namespace transitionPicker{
         function relocateColorPoint(mouseH: number, mouseL: number){
             let newColor = HLCoordsToColor(mouseH, mouseL);
             if(closestIsStart){
-                allCues[closestIndex].start_color = newColor;
+                cues.get(closestIndex).start_color = newColor;
             } else {
-                allCues[closestIndex].end_color = newColor;
+                cues.get(closestIndex).end_color = newColor;
             }
-            line.redraw(allCues[closestIndex]);
+            line.redraw(cues.get(closestIndex));
         }
 
         function mouseMove(e: MouseEvent){
@@ -183,22 +183,22 @@ namespace transitionPicker{
             closestDistance = gradient.width + gradient.height;
             closestIndex = Infinity;
             closestIsStart = true;
-            for(let i of activeCueIndices){
-                let [startH, startL] 	= colorToHLCoords(allCues[i].start_color);
-                let [endH, endL] 		= colorToHLCoords(allCues[i].end_color);
+            //for(let i of activeCueIndices){
+                let [startH, startL] 	= colorToHLCoords(cues.current().start_color);
+                let [endH, endL] 		= colorToHLCoords(cues.current().end_color);
                 let startDistance 	= Math.sqrt(Math.pow(startH - mouseH, 2) + Math.pow(startL - mouseL, 2));
                 let endDistance 	= Math.sqrt(Math.pow(endH 	- mouseH, 2) + Math.pow(endL   - mouseL, 2));
                 if(startDistance < closestDistance){
                     closestDistance = startDistance;
-                    closestIndex	= i;
+                    closestIndex	= cues.all.indexOf(cues.current());
                     closestIsStart	= true;
                 }
                 if(endDistance < closestDistance){
                     closestDistance = endDistance;
-                    closestIndex	= i;
+                    closestIndex	= cues.all.indexOf(cues.current());
                     closestIsStart	= false;
                 }
-            }
+            //}
             //relocate colour point (important so that just clicking once also has an effect)
             relocateColorPoint(mouseH, mouseL);
         }

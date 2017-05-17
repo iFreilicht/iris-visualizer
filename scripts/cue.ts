@@ -55,6 +55,50 @@ class Cue extends CueNoColor{
 		this.offset_color 	= new Color(defaultValue(p.offset_color, 'black')           );
     }
 
+	interpolate(progress: number){
+		//progress should be between 0 and 1;
+		progress = progress % 1;
+
+		let cue = this;
+		function linear(start: number, end: number, wrapHue = false){
+			//factor is a sawtooth function
+			let factor = progress < cue.ramp_parameter ? 
+				progress / cue.ramp_parameter :
+				1 - (progress - cue.ramp_parameter)/(1 - cue.ramp_parameter);
+
+			let delta = end - start;
+			if (wrapHue){
+				let result = start + (delta + 360) * factor;
+				//calculate modulo so that it behaves with negative numbers
+				result = ((result % 360) + 360) % 360;
+				return result;
+			}
+			else{
+				return start + delta * factor;
+			}
+		}
+
+		let result = new Color();
+		switch(this.ramp_type){
+			case RampType.jump:
+				if (progress > this.ramp_parameter){
+					return this.end_color;
+				} else {
+					return this.start_color;
+				}
+			case RampType.linearHSL:
+				result.hue(			linear(this.start_color.hue(), 			this.end_color.hue(), this.wrap_hue));
+				result.saturation(	linear(this.start_color.saturation(), 	this.end_color.saturation()));
+				result.lightness(	linear(this.start_color.lightness(), 	this.end_color.lightness()));
+				return result;
+			case RampType.linearRGB:
+				result.red(			linear(this.start_color.red(), 		this.end_color.red()))
+				result.green(		linear(this.start_color.green(), 	this.end_color.green()))
+				result.blue(		linear(this.start_color.blue(), 	this.end_color.blue()));
+				return result;
+		}
+	}
+
     toJSON() : CueSerialized{
         //leave out all unused fields for now
 		return {
