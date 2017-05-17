@@ -1,20 +1,22 @@
 /// <reference path="./helpers/defaultValue.ts"/>
 /// <reference path="./cue.ts"/>
+/// <reference path="./ringDisplay.ts"/>
 
+import drawLed = ringDisplay.drawLed;
 
 //"use strict";
 
 //constants
-	let pollingInterval = 16;
-	let numLeds 		= 12;
-	let ledsStepRad 	= 2/numLeds;
-	let ledsWidthRad 	= 0.156;
-	let ledLastStartRad = 1.5 - ledsWidthRad/2;
-	let ledLastEndRad 	= 1.5 + ledsWidthRad/2;
-	let caseColorOuter	= new Color('hsl(0,0%,15%)');
-	let caseColorEdge	= new Color('hsl(0,0%,10%)');
-	let caseColorInner	= new Color('hsl(0,0%,5%)');
-	let buttonColor		= new Color('hsl(0,0%,10%)');
+	const pollingInterval 	= 16;
+	const numLeds 			= 12;
+	const ledsStepRad 		= 2/numLeds;
+	const ledsWidthRad 		= 0.156;
+	const ledLastStartRad 	= 1.5 - ledsWidthRad/2;
+	const ledLastEndRad 	= 1.5 + ledsWidthRad/2;
+	const caseColorOuter	= new Color('hsl(0,0%,15%)');
+	const caseColorEdge		= new Color('hsl(0,0%,10%)');
+	const caseColorInner	= new Color('hsl(0,0%,5%)');
+	const buttonColor		= new Color('hsl(0,0%,10%)');
 //---
 
 //helpers
@@ -63,11 +65,6 @@
 //---
 
 //get document elements
-	let ringDisplay = document.getElementById("ringDisplay")!;
-	let ledHitboxDiv = document.getElementById("ledHitboxDiv")!;
-	let ledRingCanvas = document.getElementById("ledRingCanvas") as HTMLCanvasElement;
-	let ledRingCtx = ledRingCanvas.getContext("2d") as CanvasRenderingContext2D;
-
 	let transitionPicker = document.getElementById("transitionPicker")!;
 
 	let transPickerGradCanvas = document.getElementById("transitionPickerHLGradient") as HTMLCanvasElement;
@@ -369,15 +366,15 @@
 	}
 
 	function startChannelEditing(){
+		ringDisplay.startChannelEditing();
 		channelEditStartButton.setAttribute("hidden", "");
-		ledHitboxDiv.removeAttribute("hidden");
 		channelEditStopButton.removeAttribute("hidden");
 		editChannelsInstructions.removeAttribute("hidden");
 	}
 
 	function stopChannelEditing(){
+		ringDisplay.startChannelEditing();
 		channelEditStartButton.removeAttribute("hidden");
-		ledHitboxDiv.setAttribute("hidden", "");
 		channelEditStopButton.setAttribute("hidden", "");
 		editChannelsInstructions.setAttribute("hidden", "");
 	}
@@ -752,78 +749,7 @@
 //---
 
 //Ring Display constants and drawing functions
-	//measurements in mm
-		let buttonR			= 4.9;
-		let ringR			= 5.45;
-		let ringWidth		= 0.9;
-		let caseRInner		= 6;
-		let caseREdge		= 6.75;
-		let caseROuter		= 9;
-	//---
-	//above Radii are in mm, have to be scaled to pixels
-	let canvasScale = 16;
-
-	let ringX = ledRingCanvas.width/2;
-	let ringY = ledRingCanvas.height/2;
-
-	//draw complete case to canvas
-	function drawCase(){
-		//draw static parts to canvas
-		function drawCasePart(radius: number, color: Color){
-			ledRingCtx.fillStyle = color.getHex();
-			ledRingCtx.beginPath();
-			ledRingCtx.arc(ringX, ringY, radius * canvasScale, 0, 2 * Math.PI);
-			ledRingCtx.fill();
-		}
-		drawCasePart(caseROuter, caseColorOuter);
-		drawCasePart(caseREdge, caseColorEdge);
-		drawCasePart(caseRInner, caseColorInner);
-		drawCasePart(buttonR, buttonColor);
-	}
 	
-	//Draw colour to one LED
-	function drawLed(index: number, color: Color){
-		color = defaultValue(color, new Color('black'));
-		index = index % numLeds;
-		ledRingCtx.lineWidth = ringWidth * canvasScale;
-		ledRingCtx.strokeStyle = color.getHex();
-		ledRingCtx.beginPath();
-		ledRingCtx.arc(ringX, ringY, ringR * canvasScale, 
-			(ledLastStartRad + ledsStepRad * index) * Math.PI, 
-			(ledLastEndRad + ledsStepRad * index) * Math.PI
-		);
-		ledRingCtx.stroke();
-	};
-
-	//Generate and place Hitboxes for clicking LEDs
-	function setupLedHitboxes(){
-		let originalTemplate = document.getElementById("ledHitboxTemplate")!;
-		let centerTop = (ledRingCanvas.height - originalTemplate.getBoundingClientRect().height)/2;
-		let centerLeft = (ledRingCanvas.width - originalTemplate.getBoundingClientRect().width)/2;
-
-
-		for(let id = 0; id < numLeds; id++){
-			
-			let template = document.getElementById("ledHitboxTemplate")!.cloneNode(true) as HTMLElement;
-			template.removeAttribute("hidden");
-			template.setAttribute("ledID", "" + id);
-			template.removeAttribute("id");
-
-			//calculate new position
-			let angleDeg = -90 + id * (360 / numLeds);
-			let angleRad = angleDeg * Math.PI / 180;
-			let top = centerTop + Math.sin(angleRad) * ringR * canvasScale;
-			let left = centerLeft + Math.cos(angleRad) * ringR * canvasScale;
-
-			template.style.top = top + "px";
-			template.style.left = left + "px";
-			template.style.transform = "rotate(" + angleDeg + "deg)";
-
-			template.addEventListener("click", function(){toggleChannel(id)});
-
-			ledHitboxDiv.appendChild(template);
-		}
-	}
 //---
 
 //interpolate between start and end colour of a cue
@@ -875,7 +801,7 @@ function interpolate(cue: Cue, progress: number) : Color{
 
 //Set up cues
 
-drawCase();
+	ringDisplay.init();
 
 //prepare cues
 	createCue();
@@ -966,7 +892,6 @@ function drawCue(id: number){
 
 //*
 //Main loop
-	setupLedHitboxes();
 //TODO: Remove this!
 	createCue();
 	allCues[7].channels = [true, true, true, true, true, true, false, false, false, false, false, false];
