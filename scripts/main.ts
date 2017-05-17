@@ -1,4 +1,5 @@
 /// <reference path="./helpers/defaultValue.ts"/>
+/// <reference path="./helpers/firstFreeIndex.ts"/>
 /// <reference path="./cue.ts"/>
 /// <reference path="./ringDisplay.ts"/>
 /// <reference path="./transitionPicker.ts"/>
@@ -33,16 +34,6 @@ function init(){
 
 	function numKeys(object: Object) : number {
 		return Object.keys(object).length;
-	}
-
-	function smallestUnusedID(object: any[]) : number{
-		let numIDs = numKeys(object);
-		for(let i = 0; i <= numIDs; i++){
-			if(typeof object[i] === "undefined"){
-				return i;
-			}
-		}
-		return numIDs;
 	}
 
 	function cueBrowserItemByCueID(id: number){
@@ -108,7 +99,6 @@ function init(){
 	let wrapHueDiv = document.getElementById("wrapHueDiv")!;
 	let cueEditor = document.getElementById("cueEditor")!;
 //---
-
 
 //Additional Options Collapsible
 	let additionalOptions = document.getElementById("additionalOptions")!;
@@ -291,7 +281,7 @@ function init(){
 	}
 
 	function createCue(){
-		let id = smallestUnusedID(allCues); 
+		let id = firstFreeIndex(allCues); 
 		let template = document.getElementById("cueTemplate")!.cloneNode(true) as Element;
 		template.removeAttribute("hidden");
 		template.setAttribute("cueID", "" + id);
@@ -421,7 +411,7 @@ function init(){
 	}
 
 	function createPeriod(id: number){
-		let periodID = smallestUnusedID(allSchedules[currentScheduleID].periods);
+		let periodID = firstFreeIndex(allSchedules[currentScheduleID].periods);
 		let template = document.getElementById("periodTemplate")!.cloneNode(true) as HTMLElement;
 		template.removeAttribute("hidden");
 		template.setAttribute("cueID", "" + id);
@@ -461,12 +451,12 @@ function init(){
 
 	function addPeriod(id: number){
 		createPeriod(id);
-		let itemID = smallestUnusedID(allSchedules[currentScheduleID].periods);
+		let itemID = firstFreeIndex(allSchedules[currentScheduleID].periods);
 		allSchedules[currentScheduleID].periods[itemID] = new Period(id);
 	}
 
 	function createSchedule(){
-		let id = smallestUnusedID(allSchedules); 
+		let id = firstFreeIndex(allSchedules); 
 		let template = document.getElementById("scheduleTemplate")!.cloneNode(true) as Element;
 		template.removeAttribute("hidden");
 		template.setAttribute("scheduleID", "" + id);
@@ -562,10 +552,6 @@ function init(){
 			scheduleEditor.removeChild(scheduleEditor.children[0]);
 		}
 	}
-//---
-
-//Ring Display constants and drawing functions
-	
 //---
 
 //interpolate between start and end colour of a cue
