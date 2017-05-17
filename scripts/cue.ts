@@ -1,10 +1,6 @@
 /// <reference path="./helpers/defaultValue.ts"/>
 /// <reference path="./schedule.ts"/>
-/// <reference path="./color-js/color.d.ts"/>
-/// <reference path="./color-js/color.ts"/>
-
-type Color = net.brehaut.Color;
-let Color = net.brehaut.Color;
+/// <reference path="./color/Color.ts"/>
 
 enum RampType{
 	linearHSL,
@@ -54,9 +50,9 @@ class Cue extends CueNoColor{
 		this.duration 		= defaultValue(p.duration,			3000					);
 		this.ramp_type 		= defaultValue(p.ramp_type,			RampType.linearHSL		);
 		this.ramp_parameter = defaultValue(p.ramp_parameter,	1						);
-		this.start_color 	= Color(defaultValue(p.start_color,	'#FF0000')              );
-		this.end_color 		= Color(defaultValue(p.end_color, 	'#FF0001')	            );
-		this.offset_color 	= Color(defaultValue(p.offset_color, 'black')               );
+		this.start_color 	= new Color(defaultValue(p.start_color,	'#FF0000')          );
+		this.end_color 		= new Color(defaultValue(p.end_color, 	'#FF0001')	        );
+		this.offset_color 	= new Color(defaultValue(p.offset_color, 'black')           );
     }
 
     toJSON() : CueSerialized{
@@ -70,8 +66,8 @@ class Cue extends CueNoColor{
 			duration: this.duration,
 			ramp_type: this.ramp_type,
 			ramp_parameter: this.ramp_parameter,
-			start_color: this.start_color.toString(),
-			end_color: this.end_color.toString(),
+			start_color: this.start_color.getHSL(),
+			end_color: this.end_color.getHSL(),
 			//offset_color: this.offset_color.getHSL()
 		};
     }

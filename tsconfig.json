@@ -5,6 +5,7 @@
         "strictNullChecks": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
+        "noImplicitAny": true,
         "outFile": "main.js"
     },
     "files":[
