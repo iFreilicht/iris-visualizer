@@ -16,6 +16,7 @@ import clearDot 	= transitionPicker.dot.clear;
 function init(){
 	ringDisplay.init();
 	transitionPicker.init();
+	cues.editor.init();
 }
 
 //"use strict";
@@ -36,12 +37,7 @@ function init(){
 //---
 
 //get document elements
-	let rampParameterDisplay = document.getElementById("rampParameterDisplay") as HTMLCanvasElement;
 	let output = document.getElementById("output")!;
-
-	let editChannelsInstructions = document.getElementById("editChannelsInstructions")!;
-	let channelEditStartButton = document.getElementById("channelEditStartButton")!;
-	let channelEditStopButton = document.getElementById("channelEditStopButton")!;
 
 	let uploadAnchor = document.getElementById("uploadAnchor") as HTMLInputElement;
 	//store empty file list now as it cannot be constructed later
@@ -49,105 +45,15 @@ function init(){
 //---
 
 //editor options objects
-	let duration = document.getElementById("duration") as HTMLInputElement;
-	let timeDivisor = document.getElementById("timeDivisor") as HTMLInputElement;
-	let rampType = document.getElementById("rampType") as HTMLSelectElement;
-	let rampParameter = document.getElementById("rampParameter") as HTMLInputElement;
-	let reverse = document.getElementById("reverse") as HTMLInputElement;
-	let wrapHue = document.getElementById("wrapHue") as HTMLInputElement;
 //---
 
-//encapsulating divs
-	let rampParameterDiv = document.getElementById("rampParameterDiv")!;
-	let wrapHueDiv = document.getElementById("wrapHueDiv")!;	
+//encapsulating divs	
 //---
 
 //Additional Options Collapsible
-	let additionalOptions = document.getElementById("additionalOptions")!;
-	function toggleOptions(){
-		if(additionalOptions.hidden){
-			additionalOptions.removeAttribute("hidden");
-		}
-		else{
-			additionalOptions.setAttribute("hidden", "");
-		}
-	}
 //---
 
 //Event Handlers for options:
-	function updateRampParameter(value: string){
-		cues.current().ramp_parameter = parseFloat(value);
-		rampParameterDisplay.innerHTML = value;
-	}
-	function updateRampType(value: string){
-		if(((RampType as any)[value]) != undefined){
-				cues.current().ramp_type = (RampType as any)[value];
-				updateOptionVisibility(cues.current());
-		} else {
-				console.warn(`Tried to update ramp_type to invalid value "${value}".`);
-		}
-		
-		
-	}
-	function updateDuration(value: string){
-		cues.current().duration = parseInt(value);
-	}
-	function updateTimeDivisor(value: string){
-		cues.current().time_divisor = parseInt(value);
-	}
-	function updateReverse(checked: boolean){
-		cues.current().reverse = checked;
-	}
-	function updateWrapHue(checked: boolean){
-		cues.current().wrap_hue = checked;
-		redrawLine(cues.current());
-	}
-
-	function updateCueEditorValues(cue: Cue){
-		updateOptionVisibility(cue);
-
-		duration.value = cue.duration.toString();
-		timeDivisor.value = cue.time_divisor.toString();
-		rampType.value = RampType[cue.ramp_type];
-		rampParameter.value = cue.ramp_parameter.toString();
-		updateRampParameter(cue.ramp_parameter.toString());
-		reverse.checked = cue.reverse;
-		wrapHue.checked = cue.wrap_hue;
-	}
-
-	function updateOptionVisibility(cue: Cue){
-		switch(cue.ramp_type){
-			case RampType.jump:
-				rampParameterDiv.removeAttribute("hidden");
-				wrapHueDiv.setAttribute("hidden", "");
-				break;
-			case RampType.linearHSL:
-				rampParameterDiv.removeAttribute("hidden");
-				wrapHueDiv.removeAttribute("hidden");
-				break;
-			default:
-				rampParameterDiv.setAttribute("hidden", "");
-				wrapHueDiv.setAttribute("hidden", "");		
-		}
-	}
-
-	function startChannelEditing(){
-		ringDisplay.startChannelEditing();
-		channelEditStartButton.setAttribute("hidden", "");
-		channelEditStopButton.removeAttribute("hidden");
-		editChannelsInstructions.removeAttribute("hidden");
-	}
-
-	function stopChannelEditing(){
-		ringDisplay.startChannelEditing();
-		channelEditStartButton.removeAttribute("hidden");
-		channelEditStopButton.setAttribute("hidden", "");
-		editChannelsInstructions.setAttribute("hidden", "");
-	}
-
-	function toggleChannel(ledID: number){
-		cues.current().channels[ledID] = !cues.current().channels[ledID];
-	}
 //---
 
 //Cue Management

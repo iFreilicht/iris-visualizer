@@ -1,4 +1,5 @@
 /// <reference path="./cue.ts"/>
+/// <reference path="./helpers/assertNever.ts" />
 
 namespace cues{
     let currentID = NaN;
@@ -38,7 +39,7 @@ namespace cues{
 		}
 		//TODO: Update all the values displayed in editor
 		redrawLine(cues.current());
-		updateCueEditorValues(cues.current());
+		cues.editor.update(cues.current());
 		times.reset();
     }
 
@@ -47,7 +48,7 @@ namespace cues{
 		//Better render a few false frames than let the display die
 		let elem = browser.itemByCueID(id);
 		if (elem != null){
-			stopChannelEditing();
+			cues.editor.channels.stopEditing();
 			elem.removeAttribute("active");
 			clearLine();
 			clearDot();
@@ -125,6 +126,227 @@ namespace cues{
 
     export namespace editor{
         let mainDiv = document.getElementById("cueEditor")!;
+
+        export namespace channels{
+            let instructions = document.getElementById("editChannelsInstructions")!;
+            let startButton = document.getElementById("channelEditStartButton")!;
+            let stopButton = document.getElementById("channelEditStopButton")!;
+
+            export function startEditing(){
+                ringDisplay.startChannelEditing();
+                startButton.setAttribute("hidden", "");
+                stopButton.removeAttribute("hidden");
+                instructions.removeAttribute("hidden");
+            }
+
+            export function stopEditing(){
+                ringDisplay.startChannelEditing();
+                startButton.removeAttribute("hidden");
+                stopButton.setAttribute("hidden", "");
+                instructions.setAttribute("hidden", "");
+            }
+
+            export function toggle(ledID: number){
+                current().channels[ledID] = !current().channels[ledID];
+            }
+
+            export function init(){
+                startButton.addEventListener("input", startEditing );
+                stopButton.addEventListener("input", stopEditing );
+            }
+        }
+        export namespace duration{
+            let input =  document.getElementById("duration") as HTMLInputElement;
+
+            export function update(cue: Cue){
+                input.value = cue.duration.toString();
+            }
+
+            function handleInput(value: string){
+                cues.current().duration = parseInt(value);
+            }
+
+            export function init(){
+                input.addEventListener("input", function(){ handleInput(this.value) });
+            }
+        }
+        export namespace time_divisor{
+            let input = document.getElementById("timeDivisor") as HTMLInputElement;
+
+            export function update(cue: Cue){
+                input.value = cue.time_divisor.toString();
+            }
+
+            function handleInput(value: string){
+                cues.current().time_divisor = parseInt(value);
+            }
+
+            export function init(){
+                input.addEventListener("input", function(){ handleInput(this.value) });
+            }
+        } 
+        export namespace ramp_type{
+            let input = document.getElementById("rampType") as HTMLSelectElement;
+
+            export function update(cue: Cue){
+                input.value = (RampType as any)[cue.ramp_type];
+                updateOptionVisibility(cues.current());
+            }
+
+            function handleInput(value: string){
+                //No need to check whether the string actually contains a valid RampType
+                //as this function is only called from the eventListener
+                cues.current().ramp_type = (RampType as any)[value];
+                updateOptionVisibility(cues.current());
+            }
+
+            export function init(){
+                //populate selectElement programmatically
+                for(let val in RampType){
+                    //only apply to string values, not numbers
+                    if(isNaN(parseInt(val))){
+                        let optElem = document.createElement("option");
+                        optElem.value = val;
+
+                        //Modify display value: Make first letter uppercase, insert space before capital letters
+                        let disp = val[0].toUpperCase() + val.slice(1);
+                        disp = disp.replace(/([A-Z]+)/g, ' $1');
+                        optElem.innerHTML = disp;
+
+                        input.appendChild(optElem);
+                    }
+                }
+                
+                input.addEventListener("change", function(){ handleInput(this.value) });
+            }
+        }
+        export namespace ramp_parameter{
+            let mainDiv = document.getElementById("rampParameterDiv")!;
+            let input = document.getElementById("rampParameter") as HTMLInputElement;
+            let output = document.getElementById("rampParameterDisplay") as HTMLCanvasElement;
+
+            export function update(cue: Cue){
+                input.value = cue.ramp_parameter.toString(); 
+                output.innerHTML = cue.ramp_parameter.toString();
+            }
+
+
+            function handleInput(value: string){
+                cues.current().ramp_parameter = parseFloat(value);
+                output.innerHTML = value;
+            }
+
+            export function init(){
+                input.addEventListener("input", function(){ handleInput(this.value) });
+            }
+
+            export function hide(){
+                mainDiv.setAttribute("hidden", "");
+            }
+
+            export function unhide(){
+                mainDiv.removeAttribute("hidden");
+            }
+        }
+        export namespace reverse{
+            let input = document.getElementById("reverse") as HTMLInputElement;
+
+            export function update(cue: Cue){
+                input.checked = cue.reverse;
+            }
+
+            function handleInput(checked: boolean){
+                cues.current().reverse = checked;
+            }
+
+            export function init(){
+                input.addEventListener("change", function(){ handleInput(this.checked) });
+            }
+        }
+        export namespace wrap_hue{
+            let mainDiv = document.getElementById("wrapHueDiv")!;
+            let input = document.getElementById("wrapHue") as HTMLInputElement;
+
+            export function update(cue: Cue){
+                input.checked = cue.wrap_hue;
+            }
+
+            function handleInput(checked: boolean){
+                cues.current().wrap_hue = checked;
+                transitionPicker.line.redraw(cues.current());
+            }
+
+            export function init(){
+                 input.addEventListener("change", function(){ handleInput(this.checked) });
+            }
+
+            export function hide(){
+                mainDiv.setAttribute("hidden", "");
+            }
+
+            export function unhide(){
+                mainDiv.removeAttribute("hidden");
+            }
+        }
+
+        export namespace additionalOptions{
+            let mainDiv = document.getElementById("additionalOptionsDiv")!;
+            let hidableDiv = document.getElementById("additionalOptions")!;
+            let button = document.getElementById("additionalOptionsButton")!;
+
+            export function toggle(){
+                if(mainDiv.hidden){
+                    mainDiv.removeAttribute("hidden");
+                }
+                else{
+                    mainDiv.setAttribute("hidden", "");
+                }
+            }
+
+            export function init(){
+                button.addEventListener("click", toggle);
+            }
+        }
+
+        export function init(){
+            duration.init();
+            time_divisor.init();
+            ramp_type.init();
+            ramp_parameter.init();
+            reverse.init();
+            wrap_hue.init();
+            additionalOptions.init();
+        }
+
+        export function update(cue: Cue){
+            duration.update(cue);
+            time_divisor.update(cue);
+            ramp_type.update(cue);
+            ramp_parameter.update(cue);
+            reverse.update(cue);
+            wrap_hue.update(cue);
+        }
+
+        function updateOptionVisibility(cue: Cue){
+            switch(cue.ramp_type){
+                case RampType.jump:
+                    ramp_parameter.unhide();
+                    wrap_hue.hide();
+                    return;
+                case RampType.linearHSL:
+                    ramp_parameter.unhide();
+                    wrap_hue.unhide();
+                    return;
+                case RampType.linearRGB:
+                    ramp_parameter.unhide();
+                    wrap_hue.hide();
+                    return;
+                default:
+                    assertNever(cue.ramp_type);
+            }
+
+
+        }
 
         export function hide(){
             mainDiv.setAttribute("hidden", "");

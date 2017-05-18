@@ -6,13 +6,14 @@ namespace schedules{
 
 
 
-   export function current(){
+    export function current(){
         return get(currentID);
     }
 
     export function hasCurrent(){
         return all[currentID] != undefined;
     }
+    
 
     export function get(id: number){
         if(all[id] == undefined){
@@ -141,7 +142,7 @@ namespace schedules{
         let mainDiv = document.getElementById("scheduleEditor")!;
         let progressBar = document.getElementById("scheduleProgressBar")!;
 
-        function periodByCueID(id: number){
+        export function periodByCueID(id: number){
             return document.querySelector('.period[cueID="' + id + '"]');
         }
 

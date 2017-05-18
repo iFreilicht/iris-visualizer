@@ -37,12 +37,19 @@ namespace ringDisplay{
 
     //Generate and place Hitboxes for clicking LEDs
     function setupLedHitboxes(){
+        //clear out all hitboxes if they already exist
+        if(hitboxes.childElementCount != 0){
+            while(hitboxes.firstElementChild){
+                hitboxes.removeChild(hitboxes.firstElementChild);
+            }
+        }
+
         let originalTemplate = document.getElementById("ledHitboxTemplate")!;
         let centerTop = (canvas.height - originalTemplate.getBoundingClientRect().height)/2;
         let centerLeft = (canvas.width - originalTemplate.getBoundingClientRect().width)/2;
 
         for(let id = 0; id < numLeds; id++){
-            
+
             let template = document.getElementById("ledHitboxTemplate")!.cloneNode(true) as HTMLElement;
             template.removeAttribute("hidden");
             template.setAttribute("ledID", "" + id);
@@ -58,7 +65,7 @@ namespace ringDisplay{
             template.style.left = left + "px";
             template.style.transform = "rotate(" + angleDeg + "deg)";
 
-            template.addEventListener("click", function(){toggleChannel(id)});
+            template.addEventListener("click", function(){ cues.editor.channels.toggle(id) });
 
             hitboxes.appendChild(template);
         }
