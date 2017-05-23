@@ -94,6 +94,8 @@ namespace cues{
         }
 
         editor.init();
+
+        document.getElementById("createCueButton")!.addEventListener("click", create);
     }
 
     namespace browser{

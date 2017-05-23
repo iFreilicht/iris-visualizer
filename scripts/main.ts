@@ -17,6 +17,7 @@ function init(){
 	ringDisplay.init();
 	transitionPicker.init();
 	cues.init();
+	schedules.init();
 }
 
 //"use strict";

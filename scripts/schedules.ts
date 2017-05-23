@@ -136,6 +136,10 @@ namespace schedules{
                 console.warn(`Tried to close schedule at index ${id}, but it didn't exist.`);
             }
         }
+
+        export function init(){
+            document.getElementById("createScheduleButton")!.addEventListener("click", create);
+        }
     }
 
     export namespace editor{
@@ -171,8 +175,8 @@ namespace schedules{
         export function updateProgressBarPosition(){
             let baseline = periodList.getBoundingClientRect().left;
             let rightmost = 0;
-            for(let i in periodList.children){
-                let listItem = periodList.children.item(parseInt(i));
+            for(let i = periodList.children.length - 1; i >= 0; i--){
+                let listItem = periodList.children.item(i);
                 let right = listItem.getBoundingClientRect().right - baseline;
                 if(right > rightmost){
                     rightmost = right;
@@ -241,6 +245,11 @@ namespace schedules{
             createPeriod(cue_id);
             let itemID = firstFreeIndex(all[currentID].periods);
             all[currentID].periods[itemID] = new Period(cue_id);
+            times.reset();
         }
+    }
+
+    export function init(){
+        browser.init();
     }
 }

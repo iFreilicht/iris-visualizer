@@ -22,7 +22,7 @@
 			<ul id="scheduleBrowser">
 				<!--This is populated dynamically-->
 			</ul>
-			<input type="button" value="+" class="createSchedule" onclick="createSchedule()"/>
+			<input id="createScheduleButton" type="button" value="+"/>
 		</div>
 		<div>
 			<div id="ringDisplay">
@@ -53,8 +53,8 @@
 						</div>
 					</div><br>
 					<div id="editChannelsDiv">
-						<input id="channelEditStartButton" type="button" value="Edit Active Channels" onclick="startChannelEditing()"/>
-						<input hidden id="channelEditStopButton" type="button" value="Stop Editing Channels" onclick="stopChannelEditing()"/>
+						<input id="channelEditStartButton" type="button" value="Edit Active Channels">
+						<input hidden id="channelEditStopButton" type="button" value="Stop Editing Channels"/>
 						<p id="editChannelsInstructions" hidden>Click on LEDs to toggle them.</p>
 					</div><br>
 					<div id="durationDiv">
@@ -116,7 +116,7 @@
 					<input id="uploadAnchor" type="file" onchange="uploadJSON(this.files); this.value=null; return false;"/>
 					<label id="uploadButton" type="button" for="uploadAnchor">Load</label>
 					<br>
-					<input type="button" value="Create New Cue" id="createCueButton" onclick="createCue()"/>
+					<input type="button" value="Create New Cue" id="createCueButton"/>
 				</div>
 				<ul id="cueBrowser">
 					<!--This is populated dynamically-->
