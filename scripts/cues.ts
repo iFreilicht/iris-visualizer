@@ -109,7 +109,7 @@ namespace cues{
             //Modify deleteCue button from template
             let deleteCueButton = template.getElementsByClassName("deleteCue")[0] as HTMLInputElement;
             deleteCueButton.addEventListener("click", function(){destroy(id)});
-            
+
             //display fully prepared element
             mainDiv.appendChild(template);
         }
@@ -295,11 +295,11 @@ namespace cues{
             let button = document.getElementById("additionalOptionsButton")!;
 
             export function toggle(){
-                if(mainDiv.hidden){
-                    mainDiv.removeAttribute("hidden");
+                if(hidableDiv.hidden){
+                    hidableDiv.removeAttribute("hidden");
                 }
                 else{
-                    mainDiv.setAttribute("hidden", "");
+                    hidableDiv.setAttribute("hidden", "");
                 }
             }
 
