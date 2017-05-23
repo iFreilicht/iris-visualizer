@@ -15,6 +15,7 @@ enum RampType{
 // }
 
 class CueNoColor{
+	name: string; //only used for editor, not binary file
     channels: boolean[];
     reverse: boolean;
     wrap_hue: boolean;
@@ -42,6 +43,7 @@ class Cue extends CueNoColor{
         super();
         p = defaultValue(p, {});
 
+		this.name 			= defaultValue(p.name,				"Cue"					);
 		this.channels 		= defaultValue(p.channels, Array(numLeds).fill(true,0,numLeds));
 		this.reverse 		= defaultValue(p.reverse, 			false					);
 		this.wrap_hue 		= defaultValue(p.wrap_hue, 			false					);
@@ -102,6 +104,7 @@ class Cue extends CueNoColor{
     toJSON() : CueSerialized{
         //leave out all unused fields for now
 		return {
+			name: this.name,
 			channels: this.channels,
 			reverse: this.reverse,
 			wrap_hue: this.wrap_hue,

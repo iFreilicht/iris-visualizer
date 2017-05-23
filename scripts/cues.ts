@@ -88,6 +88,14 @@ namespace cues{
 		delete all[id];
     }
 
+    export function init(){
+        for(let id in all){
+            browser.updateName(parseInt(id));
+        }
+
+        editor.init();
+    }
+
     namespace browser{
         let mainDiv = document.getElementById("cueBrowser")!;
 
@@ -119,7 +127,17 @@ namespace cues{
             if (cueItem instanceof Element){
                 mainDiv.removeChild(cueItem);
             } else {
-                console.warn(`Tried to remove cue with index ${id}, but it didn't exist.`)
+                console.warn(`Tried to access cue editor item with index ${id}, but it didn't exist.`)
+            }
+        }
+
+        export function updateName(id: number){
+            let cueItem = itemByCueID(id);
+            if (cueItem instanceof Element){
+                let openCueButton = cueItem.getElementsByClassName("openCue")[0] as HTMLInputElement;
+                openCueButton.value = get(id).name; 
+            } else {
+                console.warn(`Tried to access cue editor item with index ${id}, but it didn't exist.`)
             }
         }
     }
@@ -127,6 +145,21 @@ namespace cues{
     export namespace editor{
         let mainDiv = document.getElementById("cueEditor")!;
 
+        export namespace name{
+            let input = document.getElementById("name") as HTMLInputElement;
+            export function update(cue: Cue){
+                input.value = cue.name;
+            }
+
+            function handleInput(value: string){
+                current().name = value;
+                browser.updateName(currentID);
+            }
+
+            export function init(){
+                input.addEventListener("input", function(){ handleInput(this.value) });
+            }
+        }
         export namespace channels{
             let instructions = document.getElementById("editChannelsInstructions")!;
             let startButton = document.getElementById("channelEditStartButton")!;
@@ -309,6 +342,7 @@ namespace cues{
         }
 
         export function init(){
+            name.init();
             duration.init();
             time_divisor.init();
             ramp_type.init();
@@ -319,6 +353,7 @@ namespace cues{
         }
 
         export function update(cue: Cue){
+            name.update(cue);
             duration.update(cue);
             time_divisor.update(cue);
             ramp_type.update(cue);

@@ -16,7 +16,7 @@ import clearDot 	= transitionPicker.dot.clear;
 function init(){
 	ringDisplay.init();
 	transitionPicker.init();
-	cues.editor.init();
+	cues.init();
 }
 
 //"use strict";
@@ -138,8 +138,10 @@ function init(){
 
 //prepare cues
 	cues.create();
+	cues.get(0).name = "Rainbow";
 
 	cues.create();
+	cues.get(1).name = "Breathing";
 	cues.get(1).duration = 3800;
 	cues.get(1).ramp_parameter = 0.38;
 	cues.get(1).time_divisor = 1;
@@ -147,6 +149,7 @@ function init(){
 	cues.get(1).end_color = new Color('hsl(84, 100%, 62%)');
 
 	cues.create();
+	cues.get(2).name = "Simple Jump";
 	cues.get(2).duration = 900;
 	cues.get(2).ramp_type = RampType.jump;
 	cues.get(2).ramp_parameter = 0.5;
@@ -155,6 +158,7 @@ function init(){
 	cues.get(2).reverse = true;
 
 	cues.create();
+	cues.get(3).name = "Clock 1m";
 	cues.get(3).duration = 60000;
 	cues.get(3).ramp_type = RampType.jump;
 	cues.get(3).ramp_parameter = 0.08;
@@ -162,11 +166,13 @@ function init(){
 	cues.get(3).end_color = new Color('black');
 
 	cues.create();
+	cues.get(4).name = "Borealis";
 	cues.get(4).duration = 3500;
 	cues.get(4).start_color = new Color('hsl(121, 100%, 95%)');
 	cues.get(4).end_color = new Color('hsl(307, 100%, 15%)');
 
 	cues.create();
+	cues.get(5).name = "Double Blue";
 	cues.get(5).duration = 700;
 	cues.get(5).time_divisor = 6;
 	cues.get(5).ramp_parameter = 0.5;
@@ -174,6 +180,7 @@ function init(){
 	cues.get(5).end_color = new Color('hsl(184, 100%, 51%)');
 
 	cues.create();
+	cues.get(6).name = "Wrap Pink";
 	cues.get(6).wrap_hue = true;
 	cues.get(6).start_color = new Color('hsl(310, 100%, 50%)');
 	cues.get(6).end_color = new Color('hsl(103, 100%, 95%)');
@@ -186,9 +193,11 @@ function init(){
 //Main loop
 //TODO: Remove this!
 	cues.create();
+	cues.get(7).name = "MirrorbowR";
 	cues.get(7).channels = [true, true, true, true, true, true, false, false, false, false, false, false];
 
 	cues.create();
+	cues.get(8).name = "MirrorbowL";
 	cues.get(8).reverse = true;
 	cues.get(8).channels = [false, false, false, false, false, false, true, true, true, true, true, true];
 
