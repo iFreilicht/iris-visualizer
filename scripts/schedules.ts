@@ -139,7 +139,8 @@ namespace schedules{
     }
 
     export namespace editor{
-        let mainDiv = document.getElementById("scheduleEditor")!;
+        let mainDiv = document.getElementById("scheduleEditorDiv")!;
+        let periodList = document.getElementById("scheduleEditor")!;
         let progressBar = document.getElementById("scheduleProgressBar")!;
 
         export function periodByCueID(id: number){
@@ -158,20 +159,20 @@ namespace schedules{
         }
 
         export function clear(){
-            for(let i = mainDiv.children.length; i > 0; i--){
-                mainDiv.removeChild(mainDiv.children[0]);
+            for(let i = periodList.children.length; i > 0; i--){
+                periodList.removeChild(periodList.children[0]);
             }
         }
 
         function updateProgressBarHeight(){
-		    progressBar.style.height = mainDiv.getBoundingClientRect().height + "px";
+		    progressBar.style.height = periodList.getBoundingClientRect().height + "px";
 	    }
 
         export function updateProgressBarPosition(){
-            let baseline = mainDiv.getBoundingClientRect().left;
+            let baseline = periodList.getBoundingClientRect().left;
             let rightmost = 0;
-            for(let i in mainDiv.children){
-                let listItem = mainDiv.children.item(parseInt(i));
+            for(let i in periodList.children){
+                let listItem = periodList.children.item(parseInt(i));
                 let right = listItem.getBoundingClientRect().right - baseline;
                 if(right > rightmost){
                     rightmost = right;
@@ -185,7 +186,7 @@ namespace schedules{
         export function removePeriods(cue_id: number){
             let period: Element | null; 
             while((period = periodByCueID(cue_id)) !== null){
-                mainDiv.removeChild(period);
+                periodList.removeChild(period);
             }
 
             for(let i in all){
@@ -212,7 +213,7 @@ namespace schedules{
             
             //implement dragging
             template.addEventListener("mousedown", function(event : MouseEvent){
-                let leftLower = mainDiv.getBoundingClientRect().left + event.offsetX;
+                let leftLower = periodList.getBoundingClientRect().left + event.offsetX;
                 let start = event.pageX;
                 let diff = 0;
                 
@@ -232,7 +233,7 @@ namespace schedules{
             });
         
             //display fully prepared element
-            mainDiv.appendChild(template);
+            periodList.appendChild(template);
             updateProgressBarHeight();
         }
 
