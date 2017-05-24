@@ -73,7 +73,7 @@ ul {
 
 .listItem input[class="openCue"]{
 	text-align: left;
-	width: 60%;
+	width: 80%;
 	float: left;
 }
 
@@ -119,11 +119,11 @@ ul {
 }
 
 .period {
-	width: 20%;
+	width: 50%;
 }
 
 .periodOptions {
-	width: 40%!important;
+	width: 20%!important;
 }
 
 #scheduleProgressBar {
