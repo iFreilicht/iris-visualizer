@@ -175,7 +175,7 @@ namespace cues{
             }
 
             export function stopEditing(){
-                ringDisplay.startChannelEditing();
+                ringDisplay.stopChannelEditing();
                 startButton.removeAttribute("hidden");
                 stopButton.setAttribute("hidden", "");
                 instructions.setAttribute("hidden", "");
@@ -186,8 +186,8 @@ namespace cues{
             }
 
             export function init(){
-                startButton.addEventListener("input", startEditing );
-                stopButton.addEventListener("input", stopEditing );
+                startButton.addEventListener("click", startEditing );
+                stopButton.addEventListener("click", stopEditing );
             }
         }
         export namespace duration{
@@ -351,6 +351,7 @@ namespace cues{
             ramp_parameter.init();
             reverse.init();
             wrap_hue.init();
+            channels.init();
             additionalOptions.init();
         }
 
