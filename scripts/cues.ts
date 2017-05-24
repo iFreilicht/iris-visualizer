@@ -39,7 +39,7 @@ namespace cues{
 		}
 		//TODO: Update all the values displayed in editor
 		redrawLine(cues.current());
-		cues.editor.update(cues.current());
+		editor.update();
 		times.reset();
     }
 
@@ -63,13 +63,24 @@ namespace cues{
         }
     }
 
-    export function create(){
-        let id = firstFreeIndex(all); 
-        browser.addItem(id);
+    export function clear(){
+        for (let i = length() - 1; i >= 0; i--){
+            destroy(i);
+        }
+    }
 
-		//create cue object
-		let cue = new Cue();
-		all[id] = cue;
+    export function create(id?: number){
+        if (id == null){
+            id = firstFreeIndex(all); 
+        }
+    
+        //create cue object
+        if(all[id] == null){
+            let cue = new Cue();
+            all[id] = cue;
+        }
+
+        browser.addItem(id);
 		
 		open(id);
     }
@@ -81,11 +92,13 @@ namespace cues{
 		if (currentID == id){
 			close(id);
 		}
+
+        if(all[id] != null){
+            browser.removeItem(id);
 		
-		browser.removeItem(id);
-		
-		schedules.editor.removePeriods(id);
-		delete all[id];
+            schedules.editor.removePeriods(id);
+            delete all[id];
+        }
     }
 
     export function init(){
@@ -95,7 +108,7 @@ namespace cues{
 
         editor.init();
 
-        document.getElementById("createCueButton")!.addEventListener("click", create);
+        document.getElementById("createCueButton")!.addEventListener("click", function(){create()});
     }
 
     namespace browser{
@@ -113,7 +126,7 @@ namespace cues{
             
             //Modify openCue button from template
             let openCueButton = template.getElementsByClassName("openCue")[0] as HTMLInputElement;
-            openCueButton.value = "Cue " + id;
+            openCueButton.value = get(id).name;
             openCueButton.addEventListener("click", function(){open(id)});
             
             //Modify deleteCue button from template
@@ -355,7 +368,7 @@ namespace cues{
             additionalOptions.init();
         }
 
-        export function update(cue: Cue){
+        export function update(cue: Cue = current()){
             name.update(cue);
             duration.update(cue);
             time_divisor.update(cue);

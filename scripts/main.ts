@@ -59,8 +59,24 @@ function init(){
 
 //Cue Management
 
+	class JSONStorage{
+		cues: typeof cues.all;
+		schedules: typeof schedules.all;
+
+		constructor(all_cues: typeof cues.all, all_schedules: typeof schedules.all){
+			this.cues = all_cues;
+			this.schedules = all_schedules;
+		}
+	}
+
 	function downloadJSON(){
-		let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cues.all, null, 2));
+		let dataStr = "data:text/json;charset=utf-8," 
+					+ encodeURIComponent(JSON.stringify(
+						new JSONStorage(cues.all, schedules.all),
+						null, 
+						2
+					));
+
 		let dlAnchorElem = document.getElementById('downloadAnchor') as HTMLInputElement;
 		dlAnchorElem.setAttribute("href",     dataStr     );
 		dlAnchorElem.setAttribute("download", "AllCues.json");
@@ -76,25 +92,57 @@ function init(){
 		
 		reader.onload = function(e: Event){
 			let data: string = reader.result;
+			let loadedObj = null;
+
+			function isPeriod(v: any): v is Period{
+				return v.hasOwnProperty('cue_id') && v.hasOwnProperty('delay');
+			}
+
+			function isJSONStorage(v: any): v is JSONStorage{
+				return v.hasOwnProperty('cues') && v.hasOwnProperty('schedules');
+			}
+
 			try {
-				let loadedCues = JSON.parse(data, 
+				loadedObj = JSON.parse(data, 
 				function(key: string, value: Object){
 					//this check is enough because the Cue constructor is very permissive
 					if(value.hasOwnProperty('start_color')){
+						//revive cues
 						return new Cue(value as CueSerialized);
+					}
+					if(value.hasOwnProperty('periods')){
+						return new Schedule(value);
+					}
+					if(isPeriod(value)){
+						return new Period(value.cue_id, value.delay);
 					}
 					return value;
 				});
-				
-				//remove all existing cues (store length first because it will change)
-				for (let i = cues.length(); i > 0; i--){
-					cues.destroy(0);
+
+				if (!isJSONStorage(loadedObj)){
+					throw TypeError("Loaded file was not recognised as a cue or schedule list.");
 				}
+				
+				cues.clear();
+				schedules.clear();
+
+				let loadedCues = loadedObj.cues;
+				let loadedSchedules = loadedObj.schedules;
 				
 				//add newly loaded Cues
 				for (let i in loadedCues){
-					cues.create();
-					(cues.all as any)[i] = loadedCues[i];
+					if(!isNaN(parseInt(i))){
+						(cues.all as any)[i] = loadedCues[i];
+						cues.create(parseInt(i));
+					}
+				}
+
+				//add newly loaded Schedules
+				for (let i in loadedSchedules){
+					if(!isNaN(parseInt(i))){
+						(schedules.all as any)[i] = loadedSchedules[i];	
+						schedules.create(parseInt(i));
+					}
 				}
 				
 				cues.open(0);			
@@ -102,7 +150,8 @@ function init(){
 			catch (e){
 				alert("Sorry, the file you supplied could not be read properly. "
 						+"More info can be found in the console log. (F12)")
-				console.log(e);
+				console.log("Loaded Object:", loadedObj);
+				throw e;
 			}
 		}
 		

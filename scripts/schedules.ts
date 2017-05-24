@@ -2,7 +2,8 @@
 
 namespace schedules{
     let currentID = NaN;
-    let all: Schedule[] = [];
+    //TODO: don't export this! This is only exported for uploadJSON and downloadJSON!
+    export let all: Schedule[] = [];
 
 
 
@@ -57,14 +58,25 @@ namespace schedules{
         }
     }
 
-    export function create(){
-        let id = firstFreeIndex(all); 
+    export function clear(){
+        for (let i = length() - 1; i >= 0; i--){
+            destroy(i);
+        }
+    }
+
+    export function create(id?: number){
+        if (id == null){
+            id = firstFreeIndex(all); 
+        }
+
+        //create Schedule object
+        if(all[id] == null){
+            let schedule = new Schedule(undefined);
+		    all[id] = schedule;
+        }
+
         browser.addItem(id);
-		
-		//create Schedule object
-		let schedule = new Schedule(undefined);
-		all[id] = schedule;
-		
+
 		open(id);
     }
 
@@ -76,9 +88,11 @@ namespace schedules{
 			closeCurrent();
 		}
 		
-		browser.removeItem(id);
+        if(all[id] != null){
+            browser.removeItem(id);
 
-		delete all[id];
+            delete all[id];
+        }
 		
 		currentID = NaN;
     }
@@ -138,7 +152,7 @@ namespace schedules{
         }
 
         export function init(){
-            document.getElementById("createScheduleButton")!.addEventListener("click", create);
+            document.getElementById("createScheduleButton")!.addEventListener("click", function(){create()});
         }
     }
 
