@@ -4,3 +4,6 @@
 [submodule "scripts/color"]
 	path = scripts/color
 	url = https://github.com/iFreilicht/Color
+[submodule "scripts/noUiSlider"]
+	path = scripts/noUiSlider
+	url = https://github.com/leongersen/noUiSlider
