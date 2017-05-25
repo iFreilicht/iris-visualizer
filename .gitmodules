@@ -7,3 +7,6 @@
 [submodule "scripts/noUiSlider"]
 	path = scripts/noUiSlider
 	url = https://github.com/leongersen/noUiSlider
+[submodule "scripts/wnumb"]
+	path = scripts/wnumb
+	url = https://github.com/leongersen/wnumb
