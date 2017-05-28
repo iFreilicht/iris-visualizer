@@ -6,7 +6,7 @@
     <title>Iris Visualizer</title>
 
     <link rel="stylesheet" href="style.css">  
-	
+	<link rel="stylesheet" href="scripts/nouislider.css">
   </head>
   <body>
 	<header>
@@ -85,12 +85,19 @@
 				</div><br>
 				<div id="scheduleEditorDiv">
 					<div>
-						<label for="scheduleEditorTimescale">Total Time on scale:</label>
+						<label for="scheduleEditorTimescale">Duration (ms):</label>
 						<input id="scheduleEditorTimescale" type="number"/>
 					</div>
-					<li id="periodTemplate" class="period listItem" cueID="Infinity" hidden draggable="false" ondragstart="dragPeriod(this, event)">
-						<input type="button" value="CueTmp" class="openCue"/>
-						<input type="button" value="•••" class="periodOptions"/>
+					<li id="periodTemplate" class="period listItem" cueID="Infinity" hidden>
+						<div>
+							<label class="periodName"></label>
+							<input type="button" class="addDelayButton" value="Add Delay"/>
+							<input type="button" class="removeDelayButton" value="Remove Delay"/>
+							<input type="button" class="removePeriodButton" value="✘"/>
+						</div>
+						<div class="periodDelayDiv">
+							<div class="periodDelays"></div>
+						</div>
 					</li>
 					<div>
 						<div id="scheduleProgressBar">
@@ -121,6 +128,8 @@
 				</ul>
 			</div>
 		</div>
+		<script src="scripts/noUiSlider/distribute/nouislider.js"></script>
+		<script src="scripts/wnumb/wNumb.js"></script>
 		<script src="main.js"></script>
 	</main>
   </body>

@@ -118,14 +118,6 @@ ul {
 	float: right;
 }
 
-.period {
-	width: 50%;
-}
-
-.periodOptions {
-	width: 20%!important;
-}
-
 #scheduleProgressBar {
 	position: absolute;
 	height: 20px;
@@ -136,7 +128,6 @@ ul {
 
 #scheduleEditor {
 	min-height: 30px;
-	padding-bottom: 15px;
 }
 
 #additionalOptionsButton{
@@ -201,4 +192,22 @@ ul {
 	left: 0;
 	top: 0;
 	z-index: 2;
+}
+
+.period{
+	height: 50px;
+	background-color: #EEE;
+	padding: 10px;
+	margin: 5px 0px;
+}
+
+.period input{
+	height: 25px!important;
+	margin-top: -10px!important;
+	width: auto!important;
+}
+
+.periodDelayDiv{
+	height: 40px;
+	margin: 25px 10px;
 }

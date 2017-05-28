@@ -95,7 +95,7 @@ function init(){
 			let loadedObj = null;
 
 			function isPeriod(v: any): v is Period{
-				return v.hasOwnProperty('cue_id') && v.hasOwnProperty('delay');
+				return v.hasOwnProperty('cue_id') && v.hasOwnProperty('delays');
 			}
 
 			function isJSONStorage(v: any): v is JSONStorage{
@@ -114,7 +114,7 @@ function init(){
 						return new Schedule(value);
 					}
 					if(isPeriod(value)){
-						return new Period(value.cue_id, value.delay);
+						return new Period(value.cue_id, value.delays);
 					}
 					return value;
 				});
@@ -163,7 +163,7 @@ function init(){
 	function dropCueIntoSchedule(event: DragEvent){
 		let cueID = event.dataTransfer.getData("cueID");
 		if (event.dataTransfer.getData("task") === "copy"){
-			schedules.editor.addPeriod(parseInt(cueID));
+			schedules.editor.periods.add(parseInt(cueID));
 		}
 	}
 
@@ -270,6 +270,5 @@ window.setInterval(function () {
 			ringDisplay.drawColor(new Color('black'));
 		}
 	}
-	
 }, times.pollingInterval);
 //*/

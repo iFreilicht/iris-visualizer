@@ -115,7 +115,7 @@ namespace ringDisplay{
 
     export function drawSchedule(schedule: Schedule){
 		//determine total duration of schedule
-		let totalDur = schedules.current().totalDuration();
+		let totalDur = schedules.current().duration;
 
 		//determine which cues are visible
 		let time = times.current() % totalDur;
@@ -123,11 +123,20 @@ namespace ringDisplay{
 		for(let i in schedule.periods){
 			let period = schedule.periods[i];
 			let cue = cues.get(period.cue_id);
-			if(
-				period.delay <= time && 
-				period.delay + cue.duration >= time
-				){
-					visibleCues.push(cue);
+
+            let visible = true;
+            let totalDelay = 0;
+            for(let j in period.delays){
+                let currDelay = totalDelay + period.delays[j];
+                if (currDelay <= time){
+                    visible = !visible;
+                    totalDelay = currDelay;
+                } else {
+                    break;
+                }
+            }
+			if(visible){
+                visibleCues.push(cue);
 			}
 		}
 

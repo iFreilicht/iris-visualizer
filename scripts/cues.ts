@@ -96,7 +96,7 @@ namespace cues{
         if(all[id] != null){
             browser.removeItem(id);
 		
-            schedules.editor.removePeriods(id);
+            schedules.editor.periods.removeFromAll(id);
             delete all[id];
         }
     }

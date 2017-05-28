@@ -2,36 +2,26 @@
 /// <reference path="./cues.ts"/>
 
 class Schedule{
+    duration: number;
     periods: Period[];
 
     constructor(p?: Partial<Schedule>){
         p = defaultValue(p, {});
 		
 		this.periods = defaultValue(p.periods, []);
-    }
-
-    totalDuration(){
-		let total = 0;
-
-		for(let i in this.periods){
-			let period = this.periods[i];
-			let t = period.delay + cues.get(period.cue_id).duration;
-			if(t > total){
-				total = t;
-			}
-		}
-
-		return total;
+        this.duration = defaultValue(p.duration, 3000);
     }
 }
 
 class Period{
     cue_id: number;
-    delay: number;
+    delays: number[]; //The Cue will always be started at delay 0 and run indefinitely from there.
+                      //At the first mark, it will be stopped. 
+                      //At the second mark, it will be started again and so on.
 
-    constructor(cue_id: number, delay = 0){
+    constructor(cue_id: number, delays: number[] = []){
         this.cue_id = cue_id;
-        this.delay = delay;
+        this.delays = delays;
     }
 
 }
