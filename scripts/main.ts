@@ -104,7 +104,10 @@ function init(){
 
 			try {
 				loadedObj = JSON.parse(data, 
-				function(key: string, value: Object){
+				function(key: string, value: Object | null){
+					if(value == null){
+						return null;
+					}
 					//this check is enough because the Cue constructor is very permissive
 					if(value.hasOwnProperty('start_color')){
 						//revive cues
@@ -131,7 +134,7 @@ function init(){
 				
 				//add newly loaded Cues
 				for (let i in loadedCues){
-					if(!isNaN(parseInt(i))){
+					if(!isNaN(parseInt(i)) && loadedCues[i] != null){
 						(cues.all as any)[i] = loadedCues[i];
 						cues.create(parseInt(i));
 					}
