@@ -192,7 +192,7 @@ namespace schedules{
         export namespace periods{
             export function removeFromAll(cue_id: number){
                 let period: Element | null; 
-                while((period = periodByCueID(cue_id)) !== null){
+                while((period = periodElementByCueID(cue_id)) !== null){
                     periodList.removeChild(period);
                 }
 
@@ -213,7 +213,7 @@ namespace schedules{
                     }
                 }
                 let period: Element | null;
-                if((period = periodByCueID(cue_id)) !== null){
+                if((period = periodElementByCueID(cue_id)) !== null){
                     periodList.removeChild(period);
                     updateProgressBarHeight();
                 }
@@ -279,7 +279,7 @@ namespace schedules{
             }
 
             export function addDelay(cue_id: number){
-                let periodElem = periodByCueID(cue_id);
+                let periodElem = periodElementByCueID(cue_id);
                 if(periodElem == null){
                     console.warn(`Tried to access period with Cue ID ${cue_id}, but it didn't exist.`);
                     return;
@@ -287,34 +287,51 @@ namespace schedules{
 
                 //TODO: actually create new delay in period
 
-                let slider = periodElem.getElementsByClassName("periodDelays")[0] as any;
-                let options = slider.noUiSlider.options;
-                let values = slider.noUiSlider.get() as string|string[]|number[];
+                let slider = periodElem.getElementsByClassName("periodDelays")[0]!;
+                let options = (slider as any).noUiSlider.options;
+                let values =  (slider as any).noUiSlider.get() as string | string[] | number[];
 
+                if((typeof values == "string" && 
+                    parseInt(values) == current().duration))
+                {
+                    let handle = slider.getElementsByClassName("noUi-handle")[0]!;
+                    //don't add anything if there is a visible delay at the very end of the schedule
+                    if((handle as any).hidden == null){
+                        return;
+                    }
+                    //if there's no delay currently displayed, re-spawn slider
+                    //to unhide the last handle and re-add the event listeners
+                    else{
+                        (slider as any).noUiSlider.destroy();
+
+                        options.start = current().duration;
+
+                        noUiSlider.create(slider, options);
+                    }
+                }
                 //don't add anything if there is a delay at the very end of the schedule
-                if(
-                    (typeof values == "string" && 
-                    parseInt(values) == current().duration) ||
-                    values.slice(-1)[0] == current().duration)
+                else if(values.slice(-1)[0] == current().duration)
                 {
                     return;
                 }
+                //otherwise, re-spawn the slider with one added handle
+                else {
+                    (slider as any).noUiSlider.destroy();
 
-                slider.noUiSlider.destroy();
+                    if(typeof values == "string"){
+                        values = [values]
+                    }
 
-                if(typeof values == "string"){
-                    values = [values]
+                    options.start = values;
+                    options.start.push(current().duration);
+                    //always be opposite kind of previous delay
+                    options.connect.push(!options.connect.slice(-1)[0]);
+                    noUiSlider.create(slider, options);
                 }
-
-                options.start = values;
-                options.start.push(current().duration);
-                //always be opposite kind of previous delay
-                options.connect.push(!options.connect.slice(-1)[0]);
-                noUiSlider.create(slider, options);
             }
 
             export function removeDelay(cue_id: number){
-                let periodElem = periodByCueID(cue_id);
+                let periodElem = periodElementByCueID(cue_id);
                 if(periodElem == null){
                     console.warn(`Tried to access period with Cue ID ${cue_id}, but it didn't exist.`);
                     return;
@@ -322,22 +339,34 @@ namespace schedules{
 
                 //TODO: actually create new delay in period
 
-                let slider = periodElem.getElementsByClassName("periodDelays")[0] as any;
-                let options = slider.noUiSlider.options;
-                let values = slider.noUiSlider.get() as string|string[]|number[];
+                let slider = periodElem.getElementsByClassName("periodDelays")[0]!;
+                let options = (slider as any).noUiSlider.options;
+                let values = (slider as any).noUiSlider.get() as string|string[]|number[];
 
-                //don't do anythign if there's just a single value left
+                (slider as any).noUiSlider.destroy();
+
+                //hide slider handle if there's just one value left
                 if(typeof values == "string"){
-                    return;
+                    options.start = "" + current().duration;
+
+                    noUiSlider.create(slider, options);  
+
+                    //clone node and replace it to clear all even listeners (https://stackoverflow.com/a/19470348/2533467) 
+                    let base = slider.getElementsByClassName("noUi-base")[0]!;
+                    let baseClone = base.cloneNode(true);
+                    base.parentNode!.replaceChild(baseClone, base);
+
+                    let handle = slider.getElementsByClassName("noUi-handle")[0]!;
+                    handle.setAttribute("hidden", "");
+                } 
+                //otherwise, remove the last slider handle
+                else {
+                    options.start = values; //make sure values are retained
+                    options.start.pop();
+                    options.connect.pop()
+
+                    noUiSlider.create(slider, options);
                 }
-
-                slider.noUiSlider.destroy();
-
-                options.start = values;
-                options.start.pop();
-                options.connect.pop();
-
-                noUiSlider.create(slider, options);
             }
 
             export function updateRange(oldDuration: number, newDuration: number){
@@ -358,7 +387,7 @@ namespace schedules{
             }
         }
 
-        export function periodByCueID(id: number){
+        export function periodElementByCueID(id: number){
             return document.querySelector('.period[cueID="' + id + '"]');
         }
 
