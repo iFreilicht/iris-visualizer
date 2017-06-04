@@ -169,38 +169,40 @@ namespace transitionPicker{
         }
 
         export function mouseDown(e: MouseEvent){
-            //prevent bubbling
-            e.preventDefault();
-            //make cursor invisible
-            mainDiv.style.cursor = "none";
-            //add event handlers
-            document.addEventListener("mouseup", mouseUp);
-            document.addEventListener("mousemove", mouseMove);
-            //caculate which colour is to be modified
-            let rect = mainDiv.getBoundingClientRect();
-            let mouseH = e.clientX - rect.left;
-            let mouseL = e.clientY - rect.top;
-            closestDistance = gradient.width + gradient.height;
-            closestIndex = Infinity;
-            closestIsStart = true;
-            //for(let i of activeCueIndices){
-                let [startH, startL] 	= colorToHLCoords(cues.current().start_color);
-                let [endH, endL] 		= colorToHLCoords(cues.current().end_color);
-                let startDistance 	= Math.sqrt(Math.pow(startH - mouseH, 2) + Math.pow(startL - mouseL, 2));
-                let endDistance 	= Math.sqrt(Math.pow(endH 	- mouseH, 2) + Math.pow(endL   - mouseL, 2));
-                if(startDistance < closestDistance){
-                    closestDistance = startDistance;
-                    closestIndex	= cues.all.indexOf(cues.current());
-                    closestIsStart	= true;
-                }
-                if(endDistance < closestDistance){
-                    closestDistance = endDistance;
-                    closestIndex	= cues.all.indexOf(cues.current());
-                    closestIsStart	= false;
-                }
-            //}
-            //relocate colour point (important so that just clicking once also has an effect)
-            relocateColorPoint(mouseH, mouseL);
+            if(cues.hasCurrent()){
+                //prevent bubbling
+                e.preventDefault();
+                //make cursor invisible
+                mainDiv.style.cursor = "none";
+                //add event handlers
+                document.addEventListener("mouseup", mouseUp);
+                document.addEventListener("mousemove", mouseMove);
+                //caculate which colour is to be modified
+                let rect = mainDiv.getBoundingClientRect();
+                let mouseH = e.clientX - rect.left;
+                let mouseL = e.clientY - rect.top;
+                closestDistance = gradient.width + gradient.height;
+                closestIndex = Infinity;
+                closestIsStart = true;
+                //for(let i of activeCueIndices){
+                    let [startH, startL] 	= colorToHLCoords(cues.current().start_color);
+                    let [endH, endL] 		= colorToHLCoords(cues.current().end_color);
+                    let startDistance 	= Math.sqrt(Math.pow(startH - mouseH, 2) + Math.pow(startL - mouseL, 2));
+                    let endDistance 	= Math.sqrt(Math.pow(endH 	- mouseH, 2) + Math.pow(endL   - mouseL, 2));
+                    if(startDistance < closestDistance){
+                        closestDistance = startDistance;
+                        closestIndex	= cues.all.indexOf(cues.current());
+                        closestIsStart	= true;
+                    }
+                    if(endDistance < closestDistance){
+                        closestDistance = endDistance;
+                        closestIndex	= cues.all.indexOf(cues.current());
+                        closestIsStart	= false;
+                    }
+                //}
+                //relocate colour point (important so that just clicking once also has an effect)
+                relocateColorPoint(mouseH, mouseL);
+            }
         }
         
 
