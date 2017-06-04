@@ -3,13 +3,30 @@
 
 class Schedule{
     duration: number;
+
     periods: Period[];
 
     constructor(p?: Partial<Schedule>){
         p = defaultValue(p, {});
-		
-		this.periods = defaultValue(p.periods, []);
+
+        this.periods = defaultValue(p.periods, []);
         this.duration = defaultValue(p.duration, 3000);
+    }
+
+    period(cue_id: number) : Period | null{
+        for(let i in this.periods){
+            let currPeriod = this.periods[i];
+            if(currPeriod != null && currPeriod.cue_id == cue_id){
+                return currPeriod;
+            }
+        }
+        return null;
+    }
+
+    addPeriod(cue_id: number) : Period{
+        let period = new Period(cue_id);
+        this.periods[firstFreeIndex(this.periods)] = period;
+        return period;
     }
 }
 

@@ -43,8 +43,10 @@ namespace schedules{
 		browser.activate(id);
         editor.duration.update(schedule);
 
-		for(let i in schedule.periods){
-			editor.periods.create(schedule.periods[i].cue_id);
+		for(let period of schedule.periods){
+            if(period != null){
+                editor.periods.create(period.cue_id);
+            }
 		}
 
 		times.reset();
@@ -220,17 +222,14 @@ namespace schedules{
             }
 
             export function create(cue_id: number){
-                let periodID = firstFreeIndex(all[currentID].periods);
                 let template = document.getElementById("periodTemplate")!.cloneNode(true) as HTMLElement;
                 template.removeAttribute("hidden");
                 template.setAttribute("cueID", "" + cue_id);
-                template.setAttribute("periodID", "" + periodID);
                 template.removeAttribute("id");
 
                 //Modify period noUiSlider
                 let slider = template.getElementsByClassName("periodDelays")[0] as HTMLElement;
-                slider.id = "periodSlider" + cue_id;
-                noUiSlider.create(slider, {
+                let options = {
                     start: current().duration,
                     connect: [true, false],
                     format: wNumb({decimals:0}),
@@ -240,9 +239,12 @@ namespace schedules{
                     step: 1,
                     range: {
                         'min': 0,
-                        'max': 3000
+                        'max': current().duration
                     }
-                });
+                }
+
+                slider.id = "periodSlider" + cue_id;
+                createSlider(slider, cue_id, options);
 
                 //Modify name from template
                 let periodName = template.getElementsByClassName("periodName")[0] as HTMLLabelElement;
@@ -259,7 +261,7 @@ namespace schedules{
                 let removeDelayButton = template.getElementsByClassName("removeDelayButton")[0]!;
                 removeDelayButton.addEventListener("click", function(){ periods.removeDelay(cue_id); })
 
-                //display fully prepared element
+                //display prepared element
                 periodList.appendChild(template);
                 updateProgressBarHeight();
             }
@@ -273,19 +275,17 @@ namespace schedules{
                 }
 
                 create(cue_id);
-                let itemID = firstFreeIndex(all[currentID].periods);
-                all[currentID].periods[itemID] = new Period(cue_id);
+                current().addPeriod(cue_id);
                 times.reset();
             }
 
-            export function addDelay(cue_id: number){
+            export function addDelay(cue_id: number, delay?: number){
                 let periodElem = periodElementByCueID(cue_id);
-                if(periodElem == null){
+                let period = current().period(cue_id);
+                if(periodElem == null || period == null){
                     console.warn(`Tried to access period with Cue ID ${cue_id}, but it didn't exist.`);
                     return;
                 }
-
-                //TODO: actually create new delay in period
 
                 let slider = periodElem.getElementsByClassName("periodDelays")[0]!;
                 let options = (slider as any).noUiSlider.options;
@@ -296,17 +296,18 @@ namespace schedules{
                 {
                     let handle = slider.getElementsByClassName("noUi-handle")[0]!;
                     //don't add anything if there is a visible delay at the very end of the schedule
-                    if((handle as any).hidden == null){
+                    if(period.delays.length >= 1){
                         return;
                     }
                     //if there's no delay currently displayed, re-spawn slider
                     //to unhide the last handle and re-add the event listeners
                     else{
-                        (slider as any).noUiSlider.destroy();
+                        destroySlider(slider);
+
+                        period.delays.push(defaultValue(delay, current().duration));
 
                         options.start = current().duration;
-
-                        noUiSlider.create(slider, options);
+                        createSlider(slider, cue_id, options);
                     }
                 }
                 //don't add anything if there is a delay at the very end of the schedule
@@ -316,65 +317,63 @@ namespace schedules{
                 }
                 //otherwise, re-spawn the slider with one added handle
                 else {
-                    (slider as any).noUiSlider.destroy();
+                    destroySlider(slider);
 
                     if(typeof values == "string"){
                         values = [values]
                     }
 
+                    period.delays.push(current().duration);
+
                     options.start = values;
                     options.start.push(current().duration);
                     //always be opposite kind of previous delay
                     options.connect.push(!options.connect.slice(-1)[0]);
-                    noUiSlider.create(slider, options);
+                    createSlider(slider, cue_id, options);
                 }
             }
 
             export function removeDelay(cue_id: number){
                 let periodElem = periodElementByCueID(cue_id);
-                if(periodElem == null){
+                let period = current().period(cue_id);
+                if(periodElem == null || period == null){
                     console.warn(`Tried to access period with Cue ID ${cue_id}, but it didn't exist.`);
                     return;
                 }
 
-                //TODO: actually create new delay in period
+                period.delays.pop(); //popping doesn't fail on an empty array, no need to check anything
 
                 let slider = periodElem.getElementsByClassName("periodDelays")[0]!;
                 let options = (slider as any).noUiSlider.options;
                 let values = (slider as any).noUiSlider.get() as string|string[]|number[];
 
-                (slider as any).noUiSlider.destroy();
+                destroySlider(slider);
 
                 //hide slider handle if there's just one value left
                 if(typeof values == "string"){
                     options.start = "" + current().duration;
-
-                    noUiSlider.create(slider, options);  
-
-                    //clone node and replace it to clear all even listeners (https://stackoverflow.com/a/19470348/2533467) 
-                    let base = slider.getElementsByClassName("noUi-base")[0]!;
-                    let baseClone = base.cloneNode(true);
-                    base.parentNode!.replaceChild(baseClone, base);
-
-                    let handle = slider.getElementsByClassName("noUi-handle")[0]!;
-                    handle.setAttribute("hidden", "");
                 } 
                 //otherwise, remove the last slider handle
                 else {
                     options.start = values; //make sure values are retained
                     options.start.pop();
                     options.connect.pop()
-
-                    noUiSlider.create(slider, options);
+                    
                 }
+
+                createSlider(slider, cue_id, options);
             }
 
             export function updateRange(oldDuration: number, newDuration: number){
                 let periods = periodList.getElementsByClassName("period");
                 for(let period of periods){
                     let slider = period.getElementsByClassName("periodDelays")[0] as any;
-                    let oldValues = slider.noUiSlider.get() as string[];
+                    let oldValues = slider.noUiSlider.get() as string | string[];
                     let newValues: number[] = [];
+
+                    if(typeof oldValues == "string"){
+                        oldValues = [oldValues];
+                    }
                     for(let i in oldValues){
                         newValues[i] = parseInt(oldValues[i]) * (newDuration/oldDuration);
                     }
@@ -383,6 +382,61 @@ namespace schedules{
                         start: newValues,
                         range:{'min':0, 'max':newDuration}
                     });
+                }
+            }
+
+            function createSlider(target: Element, cue_id: number, options: any){
+                let period = current().period(cue_id);
+
+                if(period != null){
+                    let delays = period.delays;
+                    //insert values if necessary
+                    if(delays.length > 0){
+                        options.start = [];
+                        options.connect = [true];
+                        for(let delay of delays){
+                            options.start.push(delay);
+                            //always be opposite kind of previous delay
+                            options.connect.push(!options.connect.slice(-1)[0]);
+                        }
+                    }
+                }
+
+                noUiSlider.create(target, options);
+
+                if(period == null || period.delays.length == 0){
+                    //clone node and replace it to clear all event listeners (https://stackoverflow.com/a/19470348/2533467) 
+                    let base = target.getElementsByClassName("noUi-base")[0]!;
+                    let baseClone = base.cloneNode(true);
+                    base.parentNode!.replaceChild(baseClone, base);
+
+                    //hide the slider handle
+                    let handle = target.getElementsByClassName("noUi-handle")[0]!;
+                    handle.setAttribute("hidden", "");
+                }
+
+                (target as any).noUiSlider.on('update', function(){
+                    handleInput(cue_id, (target as any).noUiSlider.get());
+                });
+            }
+
+            function destroySlider(target: Element){
+                (target as any).noUiSlider.destroy();
+            }
+
+            function handleInput(cue_id: number, values: string | string[]){
+                let period = current().period(cue_id);
+
+                if(period == null){
+                    return;
+                }
+
+                if(typeof values == "string"){
+                    values = [values];
+                }
+
+                for(let i in period.delays){
+                    period.delays[i] = parseInt(values[i]);
                 }
             }
         }

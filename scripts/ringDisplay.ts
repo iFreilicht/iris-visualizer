@@ -130,7 +130,8 @@ namespace ringDisplay{
                 let currDelay = totalDelay + period.delays[j];
                 if (currDelay <= time){
                     visible = !visible;
-                    totalDelay = currDelay;
+                    //TODO: Add this line again when delays are changed to be relative
+                    //totalDelay = currDelay;
                 } else {
                     break;
                 }
