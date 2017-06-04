@@ -281,7 +281,106 @@ let example_cues =
       "start_color": "hsl(0, 100%, 100%)",
       "end_color": "hsl(0, 100%, 0%)"
     },
-    null
+    {
+      "name": "Circleblink N",
+      "channels": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "reverse": false,
+      "wrap_hue": false,
+      "time_divisor": 1,
+      "duration": 1000,
+      "ramp_type": 0,
+      "ramp_parameter": 0.9,
+      "start_color": "hsl(106, 100%, 52%)",
+      "end_color": "hsl(108, 100%, 0%)"
+    },
+    {
+      "name": "Circleblink E",
+      "channels": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "reverse": false,
+      "wrap_hue": false,
+      "time_divisor": 1,
+      "duration": 1000,
+      "ramp_type": 0,
+      "ramp_parameter": 0.9,
+      "start_color": "hsl(109, 100%, 50%)",
+      "end_color": "hsl(112, 100%, 0%)"
+    },
+    {
+      "name": "Circleblink S",
+      "channels": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "reverse": false,
+      "wrap_hue": false,
+      "time_divisor": 1,
+      "duration": 1000,
+      "ramp_type": 0,
+      "ramp_parameter": 0.9,
+      "start_color": "hsl(113, 100%, 51%)",
+      "end_color": "hsl(115, 100%, 0%)"
+    },
+    {
+      "name": "Circleblink W",
+      "channels": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "reverse": false,
+      "wrap_hue": false,
+      "time_divisor": 1,
+      "duration": 1000,
+      "ramp_type": 0,
+      "ramp_parameter": 0.9,
+      "start_color": "hsl(115, 100%, 50%)",
+      "end_color": "hsl(114, 100%, 0%)"
+    }
   ],
   "schedules": [
     {
@@ -314,6 +413,41 @@ let example_cues =
         }
       ],
       "duration": 2000
+    },
+    {
+      "periods": [
+        {
+          "cue_id": 11,
+          "delays": [
+            907
+          ]
+        },
+        {
+          "cue_id": 12,
+          "delays": [
+            0,
+            1000,
+            1907
+          ]
+        },
+        {
+          "cue_id": 13,
+          "delays": [
+            0,
+            2000,
+            2907
+          ]
+        },
+        {
+          "cue_id": 14,
+          "delays": [
+            0,
+            3000,
+            3922
+          ]
+        }
+      ],
+      "duration": 4000
     }
   ]
 }
